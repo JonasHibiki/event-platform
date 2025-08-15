@@ -1,5 +1,3 @@
-
-// Fixed src/app/page.tsx (Home page)
 import Link from 'next/link';
 
 export default function Home() {
