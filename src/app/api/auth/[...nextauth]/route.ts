@@ -8,6 +8,13 @@ import type { Session } from 'next-auth'
 
 const prisma = new PrismaClient()
 
+// Define proper user type for callbacks
+interface AuthUser {
+  id: string
+  email: string
+  name: string
+}
+
 // Export the authOptions with proper typing
 export const authOptions: AuthOptions = {
   providers: [
@@ -56,7 +63,7 @@ export const authOptions: AuthOptions = {
     signIn: '/auth/signin'
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    async jwt({ token, user }: { token: JWT; user?: AuthUser }) {
       if (user) {
         token.id = user.id
       }

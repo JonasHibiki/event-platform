@@ -65,21 +65,17 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const descriptionCharsLeft = 800 - formData.description.length
   const addressCharsLeft = 200 - formData.address.length
 
-  // Redirect if not authenticated
-  if (status === 'loading') {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-gray-600">Laster...</div>
-    </div>
-  }
-
-  if (status === 'unauthenticated') {
-    router.push('/auth/signin')
-    return null
-  }
-
+  // FIXED: Move useEffect before any conditional returns
   useEffect(() => {
-    fetchEvent()
-  }, [id])
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
+      return
+    }
+    
+    if (status === 'authenticated') {
+      fetchEvent()
+    }
+  }, [status, id, router])
 
   const fetchEvent = async () => {
     try {
@@ -120,7 +116,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       } else {
         setError('Kunne ikke laste arrangementet')
       }
-    } catch (error) {
+    } catch (fetchError) {
       setError('Noe gikk galt')
     } finally {
       setLoading(false)
@@ -159,7 +155,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   }
 
   // Ensure paste functionality works
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+  const handlePaste = () => {
     // Allow default paste behavior
     // The handleChange will automatically trim if too long
   }
@@ -300,22 +296,27 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       if (response.ok) {
         router.push(`/events/${id}`)
       } else {
-        const error = await response.json()
-        setError(error.message || 'Kunne ikke oppdatere arrangement')
+        const responseError = await response.json()
+        setError(responseError.message || 'Kunne ikke oppdatere arrangement')
       }
-    } catch (error) {
+    } catch (submitError) {
       setError('Noe gikk galt. Vennligst prøv igjen.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  if (loading) {
+  // FIXED: Conditional rendering after all hooks
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-600">Laster arrangement...</div>
       </div>
     )
+  }
+
+  if (status === 'unauthenticated') {
+    return null // Router.push is handled in useEffect
   }
 
   if (error && !event) {
@@ -489,14 +490,16 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   JPG, PNG eller WebP. Maksimalt 5MB. La være tom for å beholde nåværende bilde.
                 </div>
                 
-                {/* New Image Preview */}
+                {/* New Image Preview - FIXED: Use Next.js Image */}
                 {imagePreview && (
                   <div className="mt-4">
                     <div className="text-sm font-medium text-gray-700 mb-2">Nytt bilde:</div>
                     <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
-                      <img 
+                      <Image 
                         src={imagePreview} 
                         alt="Nytt arrangementsbilde" 
+                        width={192}
+                        height={240}
                         className="w-full h-full object-cover"
                       />
                     </div>

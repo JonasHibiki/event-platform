@@ -73,7 +73,7 @@ function DeleteConfirmModal({
         </h3>
         
         <p className="text-gray-600 mb-4">
-          Er du sikker på at du vil slette arrangementet <strong>"{event.title}"</strong>?
+          Er du sikker på at du vil slette arrangementet <strong>&quot;{event.title}&quot;</strong>?
           {event._count.rsvps > 0 && (
             <span className="text-red-600 block mt-2">
               ⚠️ {event._count.rsvps} personer har meldt seg på dette arrangementet.
@@ -227,21 +227,17 @@ export default function MyEventsPage() {
     isDeleting: false
   })
 
-  // Redirect if not authenticated
-  if (status === 'loading') {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-gray-600">Laster...</div>
-    </div>
-  }
-
-  if (status === 'unauthenticated') {
-    router.push('/auth/signin')
-    return null
-  }
-
+  // FIXED: Move useEffect before any conditional returns
   useEffect(() => {
-    fetchMyEvents()
-  }, [])
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
+      return
+    }
+    
+    if (status === 'authenticated') {
+      fetchMyEvents()
+    }
+  }, [status, router])
 
   const fetchMyEvents = async () => {
     try {
@@ -252,7 +248,7 @@ export default function MyEventsPage() {
       } else {
         setError('Kunne ikke laste dine arrangementer')
       }
-    } catch (error) {
+    } catch (fetchError) {
       setError('Noe gikk galt')
     } finally {
       setLoading(false)
@@ -292,7 +288,7 @@ export default function MyEventsPage() {
         setError(errorData.message || 'Kunne ikke slette arrangementet')
         setDeleteModal(prev => ({ ...prev, isDeleting: false }))
       }
-    } catch (error) {
+    } catch (deleteError) {
       setError('Noe gikk galt ved sletting av arrangementet')
       setDeleteModal(prev => ({ ...prev, isDeleting: false }))
     }
@@ -306,7 +302,8 @@ export default function MyEventsPage() {
     })
   }
 
-  if (loading) {
+  // FIXED: All conditional rendering after hooks
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-600">Laster dine arrangementer...</div>
@@ -314,7 +311,11 @@ export default function MyEventsPage() {
     )
   }
 
-  if (error) {
+  if (status === 'unauthenticated') {
+    return null // Router.push is handled in useEffect
+  }
+
+  if (error && !data) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -460,7 +461,7 @@ export default function MyEventsPage() {
           {/* Past Attending Events */}
           {pastAttending.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Tidligere arrangementer</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Tidigare arrangementer</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75">
                 {pastAttending.map(event => (
                   <EventCard key={event.id} event={event} />

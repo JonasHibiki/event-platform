@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -68,7 +68,7 @@ function DeleteConfirmModal({
         </h3>
         
         <p className="text-gray-600 mb-4">
-          Er du sikker på at du vil slette arrangementet <strong>"{event.title}"</strong>?
+          Er du sikker på at du vil slette arrangementet <strong>&quot;{event.title}&quot;</strong>?
           {event.rsvps.length > 0 && (
             <span className="text-red-600 block mt-2">
               ⚠️ {event.rsvps.length} personer har meldt seg på dette arrangementet.
@@ -120,11 +120,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const userRsvp = event?.rsvps.find(rsvp => rsvp.user.id === session?.user?.id)
   const isCreator = event?.creator.id === session?.user?.id
 
-  useEffect(() => {
-    fetchEvent()
-  }, [id])
-
-  const fetchEvent = async () => {
+  // FIXED: Use useCallback to stabilize fetchEvent function
+  const fetchEvent = useCallback(async () => {
     try {
       const response = await fetch(`/api/events/${id}`)
       if (response.ok) {
@@ -135,12 +132,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       } else {
         setError('Kunne ikke laste arrangementet')
       }
-    } catch (error) {
+    } catch (fetchError) {
       setError('Noe gikk galt')
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    fetchEvent()
+  }, [fetchEvent])
 
   const handleRsvp = async () => {
     if (!session) {
@@ -159,7 +160,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       } else {
         setError('Kunne ikke oppdatere påmelding')
       }
-    } catch (error) {
+    } catch (rsvpError) {
       setError('Noe gikk galt')
     } finally {
       setRsvpLoading(false)
@@ -184,8 +185,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       })
 
       if (response.ok) {
-        const result = await response.json()
-        
         // Redirect to my events page with success message
         router.push('/my-events?deleted=true')
         
@@ -194,7 +193,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         setError(errorData.message || 'Kunne ikke slette arrangementet')
         setDeleteModal({ isOpen: false, isDeleting: false })
       }
-    } catch (error) {
+    } catch (deleteError) {
       setError('Noe gikk galt ved sletting av arrangementet')
       setDeleteModal({ isOpen: false, isDeleting: false })
     }
