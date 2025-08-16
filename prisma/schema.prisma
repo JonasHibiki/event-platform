@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")  // Use the standard postgresql:// connection
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  events Event[]
+  rsvps  RSVP[]
+}
+
+// schema.prisma - Updated Event model
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String   // Max 80 characters (enforced in app)
+  description String   // Max 800 characters (enforced in app)
+  imageUrl    String   // Required - URL to uploaded image
+  startDate   DateTime
+  endDate     DateTime
+  location    String   // City for public events, "Privat arrangement" for private
+  address     String   // Required - specific address/venue (max 200 chars in app)
+  locationLink String? // Optional URL for location
+  ticketLink  String?  // Optional URL for tickets
+  category    String?  // Optional - only required for public events
+  visibility  String   @default("public") // "public" or "private"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  rsvps     RSVP[]
+}
+
+model RSVP {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Relations
+  userId  String
+  eventId String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  // Prevent duplicate RSVPs
+  @@unique([userId, eventId])
+}

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
 
@@ -11,15 +13,38 @@ const VISIBILITY_OPTIONS = [
   { value: 'private', label: 'Privat arrangement', description: 'Kun tilgjengelig via direktelenke' }
 ]
 
-export default function CreateEventPage() {
+interface Event {
+  id: string
+  title: string
+  description: string
+  imageUrl: string
+  startDate: string
+  endDate: string
+  location: string
+  address: string
+  locationLink?: string | null
+  ticketLink?: string | null
+  category: string | null
+  visibility: string
+  creator: {
+    id: string
+    username: string
+  }
+}
+
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const { data: session, status } = useSession()
   const router = useRouter()
+  
+  const [event, setEvent] = useState<Event | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
-  // Form state with character limits
+  // Form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,12 +52,12 @@ export default function CreateEventPage() {
     startTime: '',
     endDate: '',
     endTime: '',
-    location: '', // City dropdown (public events only)
-    address: '', // Required address field
+    location: '',
+    address: '',
     locationLink: '',
     ticketLink: '',
     category: '',
-    visibility: 'public' // Default to public
+    visibility: 'public'
   })
 
   // Character counters
@@ -50,6 +75,56 @@ export default function CreateEventPage() {
   if (status === 'unauthenticated') {
     router.push('/auth/signin')
     return null
+  }
+
+  useEffect(() => {
+    fetchEvent()
+  }, [id])
+
+  const fetchEvent = async () => {
+    try {
+      const response = await fetch(`/api/events/${id}`)
+      if (response.ok) {
+        const eventData = await response.json()
+        
+        // Check if user is the creator
+        if (eventData.creator.id !== session?.user?.id) {
+          setError('Du kan kun redigere dine egne arrangementer')
+          setLoading(false)
+          return
+        }
+        
+        setEvent(eventData)
+        
+        // Pre-populate form with existing data
+        const startDate = new Date(eventData.startDate)
+        const endDate = new Date(eventData.endDate)
+        
+        setFormData({
+          title: eventData.title,
+          description: eventData.description,
+          startDate: startDate.toISOString().split('T')[0],
+          startTime: startDate.toTimeString().slice(0, 5),
+          endDate: endDate.toISOString().split('T')[0],
+          endTime: endDate.toTimeString().slice(0, 5),
+          location: eventData.location === 'Privat arrangement' ? '' : eventData.location,
+          address: eventData.address,
+          locationLink: eventData.locationLink || '',
+          ticketLink: eventData.ticketLink || '',
+          category: eventData.category || '',
+          visibility: eventData.visibility
+        })
+        
+      } else if (response.status === 404) {
+        setError('Arrangementet ble ikke funnet')
+      } else {
+        setError('Kunne ikke laste arrangementet')
+      }
+    } catch (error) {
+      setError('Noe gikk galt')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -72,8 +147,8 @@ export default function CreateEventPage() {
       setFormData({
         ...formData,
         [name]: finalValue,
-        category: '', // Clear category for private events
-        location: ''  // Clear location for private events
+        category: '',
+        location: ''
       })
     } else {
       setFormData({
@@ -133,13 +208,6 @@ export default function CreateEventPage() {
     setError('')
 
     try {
-      // Validate required fields
-      if (!imageFile) {
-        setError('Arrangementsbilde er påkrevd')
-        setIsSubmitting(false)
-        return
-      }
-
       if (!formData.address.trim()) {
         setError('Sted / Adresse er påkrevd')
         setIsSubmitting(false)
@@ -183,47 +251,46 @@ export default function CreateEventPage() {
         return
       }
 
-      if (startDateTime <= new Date()) {
-        setError('Arrangementet må starte i fremtiden')
-        setIsSubmitting(false)
-        return
+      let imageUrl = event?.imageUrl // Keep existing image by default
+
+      // Upload new image if provided
+      if (imageFile) {
+        const imageFormData = new FormData()
+        imageFormData.append('image', imageFile)
+
+        const imageResponse = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: imageFormData,
+        })
+
+        if (!imageResponse.ok) {
+          const imageError = await imageResponse.json()
+          setError(imageError.message || 'Kunne ikke laste opp bilde')
+          setIsSubmitting(false)
+          return
+        }
+
+        const imageResult = await imageResponse.json()
+        imageUrl = imageResult.imageUrl
       }
 
-      // First upload the image
-      const imageFormData = new FormData()
-      imageFormData.append('image', imageFile)
-
-      const imageResponse = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: imageFormData,
-      })
-
-      if (!imageResponse.ok) {
-        const imageError = await imageResponse.json()
-        setError(imageError.message || 'Kunne ikke laste opp bilde')
-        setIsSubmitting(false)
-        return
-      }
-
-      const { imageUrl } = await imageResponse.json()
-
-      // Create event with image URL
+      // Update event
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         startDate: startDateTime.toISOString(),
         endDate: endDateTime.toISOString(),
-        location: formData.visibility === 'public' ? formData.location.trim() : 'Privat arrangement', // Only set city for public events
-        address: formData.address.trim(), // Required field
+        location: formData.visibility === 'public' ? formData.location.trim() : 'Privat arrangement',
+        address: formData.address.trim(),
         locationLink: formData.locationLink.trim() || null,
         ticketLink: formData.ticketLink.trim() || null,
-        category: formData.visibility === 'public' ? formData.category : null, // Only set category for public events
+        category: formData.visibility === 'public' ? formData.category : null,
         visibility: formData.visibility,
         imageUrl
       }
 
-      const response = await fetch('/api/events/create', {
-        method: 'POST',
+      const response = await fetch(`/api/events/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -231,11 +298,10 @@ export default function CreateEventPage() {
       })
 
       if (response.ok) {
-        const event = await response.json()
-        router.push(`/events/${event.id}`)
+        router.push(`/events/${id}`)
       } else {
         const error = await response.json()
-        setError(error.message || 'Kunne ikke opprette arrangement')
+        setError(error.message || 'Kunne ikke oppdatere arrangement')
       }
     } catch (error) {
       setError('Noe gikk galt. Vennligst prøv igjen.')
@@ -244,11 +310,46 @@ export default function CreateEventPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-600">Laster arrangement...</div>
+      </div>
+    )
+  }
+
+  if (error && !event) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😕</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+          <Link 
+            href="/events" 
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            ← Tilbake til arrangementer
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-6">
+          <Link 
+            href={`/events/${id}`}
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            ← Tilbake til arrangement
+          </Link>
+        </div>
+
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Opprett nytt arrangement</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Rediger arrangement</h1>
           
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
@@ -257,7 +358,7 @@ export default function CreateEventPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Visibility Setting - Placed first for importance */}
+            {/* Visibility Setting */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Synlighet *
@@ -356,30 +457,46 @@ export default function CreateEventPage() {
             {/* Event Image */}
             <div>
               <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Arrangementsbilde *
+                Arrangementsbilde
               </label>
+              
+              {/* Current Image Display */}
+              {event && !imagePreview && (
+                <div className="mb-4">
+                  <div className="text-sm font-medium text-gray-700 mb-2">Nåværende bilde:</div>
+                  <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
+                    <Image 
+                      src={event.imageUrl} 
+                      alt="Nåværende arrangementsbilde" 
+                      width={192}
+                      height={240}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="space-y-3">
                 <input
                   type="file"
                   name="image"
                   id="image"
-                  required
                   accept="image/jpeg,image/png,image/webp"
                   onChange={handleImageChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="text-xs text-gray-500">
-                  JPG, PNG eller WebP. Maksimalt 5MB. Blir beskjært til 4:5 format.
+                  JPG, PNG eller WebP. Maksimalt 5MB. La være tom for å beholde nåværende bilde.
                 </div>
                 
-                {/* Image Preview */}
+                {/* New Image Preview */}
                 {imagePreview && (
                   <div className="mt-4">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Forhåndsvisning:</div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Nytt bilde:</div>
                     <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
                       <img 
                         src={imagePreview} 
-                        alt="Arrangementsbilde" 
+                        alt="Nytt arrangementsbilde" 
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -422,7 +539,6 @@ export default function CreateEventPage() {
                   required
                   value={formData.startDate}
                   onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -536,14 +652,22 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
-            >
-              {isSubmitting ? 'Oppretter arrangement...' : 'Opprett arrangement'}
-            </button>
+            {/* Submit Buttons */}
+            <div className="flex gap-4">
+              <Link
+                href={`/events/${id}`}
+                className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-md hover:bg-gray-400 font-medium text-lg text-center"
+              >
+                Avbryt
+              </Link>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
+              >
+                {isSubmitting ? 'Lagrer endringer...' : 'Lagre endringer'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
