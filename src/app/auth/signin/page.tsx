@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SigninPage() {
+// Separate component that uses useSearchParams
+function SigninForm() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -38,7 +39,7 @@ export default function SigninPage() {
         router.push('/events')
         router.refresh()
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Noe gikk galt. Vennligst prøv igjen.')
     } finally {
       setLoading(false)
@@ -132,5 +133,26 @@ export default function SigninPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+// Loading fallback component
+function SigninLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Laster inn...</p>
+      </div>
+    </div>
+  )
+}
+
+// Main component with Suspense boundary
+export default function SigninPage() {
+  return (
+    <Suspense fallback={<SigninLoading />}>
+      <SigninForm />
+    </Suspense>
   )
 }
