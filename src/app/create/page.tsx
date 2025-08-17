@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
+import CompressedImageUploader from '@/components/CompressedImageUploader'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Offentlig arrangement', description: 'Vises i arrangementslistene for alle' },
@@ -16,8 +17,7 @@ export default function CreateEventPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string>('')
 
   // Form state with character limits
   const [formData, setFormData] = useState({
@@ -89,34 +89,6 @@ export default function CreateEventPage() {
     // The handleChange will automatically trim if too long
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
-    if (!validTypes.includes(file.type)) {
-      setError('Vennligst last opp et JPG, PNG eller WebP bilde')
-      return
-    }
-
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Bildet må være mindre enn 5MB')
-      return
-    }
-
-    setImageFile(file)
-    setError('')
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(file)
-  }
-
   const validateUrl = (url: string): boolean => {
     if (!url) return true // Optional field
     try {
@@ -134,7 +106,7 @@ export default function CreateEventPage() {
 
     try {
       // Validate required fields
-      if (!imageFile) {
+      if (!imageUrl) {
         setError('Arrangementsbilde er påkrevd')
         setIsSubmitting(false)
         return
@@ -189,25 +161,7 @@ export default function CreateEventPage() {
         return
       }
 
-      // First upload the image
-      const imageFormData = new FormData()
-      imageFormData.append('image', imageFile)
-
-      const imageResponse = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: imageFormData,
-      })
-
-      if (!imageResponse.ok) {
-        const imageError = await imageResponse.json()
-        setError(imageError.message || 'Kunne ikke laste opp bilde')
-        setIsSubmitting(false)
-        return
-      }
-
-      const { imageUrl } = await imageResponse.json()
-
-      // Create event with image URL
+      // Create event with compressed image URL from UploadThing
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -219,7 +173,7 @@ export default function CreateEventPage() {
         ticketLink: formData.ticketLink.trim() || null,
         category: formData.visibility === 'public' ? formData.category : null, // Only set category for public events
         visibility: formData.visibility,
-        imageUrl
+        imageUrl // This comes from UploadThing compressed upload
       }
 
       const response = await fetch('/api/events/create', {
@@ -353,39 +307,23 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* Event Image */}
+            {/* Event Image with Compression */}
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Arrangementsbilde *
               </label>
-              <div className="space-y-3">
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  required
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <div className="text-xs text-gray-500">
-                  JPG, PNG eller WebP. Maksimalt 5MB. Blir beskjært til 4:5 format.
-                </div>
-                
-                {/* Image Preview */}
-                {imagePreview && (
-                  <div className="mt-4">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Forhåndsvisning:</div>
-                    <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
-                      <img 
-                        src={imagePreview} 
-                        alt="Arrangementsbilde" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              
+              <CompressedImageUploader
+                onUploadComplete={(url) => {
+                  setImageUrl(url)
+                  setError('') // Clear any previous errors
+                }}
+                onUploadError={(error) => {
+                  setError(error)
+                  setImageUrl('')
+                }}
+                className="w-full"
+              />
             </div>
 
             {/* Event Description */}
@@ -401,7 +339,7 @@ export default function CreateEventPage() {
                 value={formData.description}
                 onChange={handleChange}
                 onPaste={handlePaste}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y break-words overflow-wrap-anywhere"
                 placeholder="Fortell folk mer om arrangementet ditt..."
               />
               <div className="text-right text-xs text-gray-500 mt-1">
@@ -539,7 +477,7 @@ export default function CreateEventPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !imageUrl}
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
             >
               {isSubmitting ? 'Oppretter arrangement...' : 'Opprett arrangement'}

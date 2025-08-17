@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
+import CompressedImageUploader from '@/components/CompressedImageUploader'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Offentlig arrangement', description: 'Vises i arrangementslistene for alle' },
@@ -41,8 +42,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [newImageUrl, setNewImageUrl] = useState<string>('')
+  const [showImageUploader, setShowImageUploader] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -160,34 +161,6 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     // The handleChange will automatically trim if too long
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
-    if (!validTypes.includes(file.type)) {
-      setError('Vennligst last opp et JPG, PNG eller WebP bilde')
-      return
-    }
-
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Bildet må være mindre enn 5MB')
-      return
-    }
-
-    setImageFile(file)
-    setError('')
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(file)
-  }
-
   const validateUrl = (url: string): boolean => {
     if (!url) return true // Optional field
     try {
@@ -247,28 +220,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         return
       }
 
-      let imageUrl = event?.imageUrl // Keep existing image by default
-
-      // Upload new image if provided
-      if (imageFile) {
-        const imageFormData = new FormData()
-        imageFormData.append('image', imageFile)
-
-        const imageResponse = await fetch('/api/upload/image', {
-          method: 'POST',
-          body: imageFormData,
-        })
-
-        if (!imageResponse.ok) {
-          const imageError = await imageResponse.json()
-          setError(imageError.message || 'Kunne ikke laste opp bilde')
-          setIsSubmitting(false)
-          return
-        }
-
-        const imageResult = await imageResponse.json()
-        imageUrl = imageResult.imageUrl
-      }
+      // Use new compressed image URL if uploaded, otherwise keep existing
+      const imageUrl = newImageUrl || event?.imageUrl
 
       // Update event
       const eventData = {
@@ -455,57 +408,68 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
 
-            {/* Event Image */}
+            {/* Event Image with Compression */}
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Arrangementsbilde
               </label>
               
               {/* Current Image Display */}
-              {event && !imagePreview && (
-                <div className="mb-4">
+              {event && !showImageUploader && (
+                <div className="space-y-3">
                   <div className="text-sm font-medium text-gray-700 mb-2">Nåværende bilde:</div>
-                  <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
+                  <div className="relative w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
                     <Image 
                       src={event.imageUrl} 
                       alt="Nåværende arrangementsbilde" 
-                      width={192}
-                      height={240}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 192px, 192px"
                     />
+                    {/* Compression indicator */}
+                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded opacity-90">
+                      🌱 Komprimert
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowImageUploader(true)}
+                    className="text-blue-600 hover:text-blue-700 text-sm underline"
+                  >
+                    Last opp nytt bilde
+                  </button>
+                  <p className="text-xs text-gray-500">
+                    La være å laste opp for å beholde nåværende bilde
+                  </p>
                 </div>
               )}
               
-              <div className="space-y-3">
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <div className="text-xs text-gray-500">
-                  JPG, PNG eller WebP. Maksimalt 5MB. La være tom for å beholde nåværende bilde.
+              {/* New Image Uploader */}
+              {showImageUploader && (
+                <div className="space-y-4">
+                  <CompressedImageUploader
+                    onUploadComplete={(url) => {
+                      setNewImageUrl(url)
+                      setError('')
+                    }}
+                    onUploadError={(error) => {
+                      setError(error)
+                    }}
+                    className="w-full"
+                  />
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowImageUploader(false)
+                      setNewImageUrl('')
+                    }}
+                    className="text-gray-600 hover:text-gray-700 text-sm underline"
+                  >
+                    Avbryt - behold nåværende bilde
+                  </button>
                 </div>
-                
-                {/* New Image Preview - FIXED: Use Next.js Image */}
-                {imagePreview && (
-                  <div className="mt-4">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Nytt bilde:</div>
-                    <div className="w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
-                      <Image 
-                        src={imagePreview} 
-                        alt="Nytt arrangementsbilde" 
-                        width={192}
-                        height={240}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Event Description */}
@@ -521,7 +485,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 value={formData.description}
                 onChange={handleChange}
                 onPaste={handlePaste}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y break-words overflow-wrap-anywhere"
                 placeholder="Fortell folk mer om arrangementet ditt..."
               />
               <div className="text-right text-xs text-gray-500 mt-1">
