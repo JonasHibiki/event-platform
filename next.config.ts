@@ -3,27 +3,37 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // UploadThing domains
     remotePatterns: [
+      // UploadThing primary domain (THE MISSING ONE!)
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      // UploadThing backup domains
       {
         protocol: "https",
         hostname: "uploadthing-prod.s3.us-west-2.amazonaws.com",
-        pathname: "/**",
       },
       {
         protocol: "https", 
         hostname: "uploadthing-prod-sea1.s3.amazonaws.com",
-        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "files.uploadthing.com",
-        pathname: "/**",
       },
       {
         protocol: "https",
+        hostname: "*.uploadthing.com",
+      },
+      {
+        protocol: "https",
+        hostname: "uploadthing.com",
+      },
+      // UploadThing CDN domains
+      {
+        protocol: "https",
         hostname: "*.ufs.sh",
-        pathname: "/f/*",
       }
     ],
     // Modern format optimization for compressed images
