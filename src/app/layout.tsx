@@ -4,8 +4,21 @@ import AuthProvider from '@/components/providers/SessionProvider'
 import Navbar from '@/components/navigation/Navbar'
 
 export const metadata: Metadata = {
-  title: "vibber - Discover and create events",
-  description: "A platform for discovering and sharing events",
+  title: {
+    default: "vibber",
+    template: "%s | vibber",
+  },
+  description: "Discover and create events",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://vibber.no"),
+  openGraph: {
+    type: "website",
+    siteName: "vibber",
+    title: "vibber",
+    description: "Discover and create events",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
