@@ -29,19 +29,41 @@ export async function PATCH(
       )
     }
 
-    // Verify the caller is the creator of the event this guest belongs to
-    if (eventId) {
-      const event = await prisma.event.findUnique({
-        where: { id: eventId },
-        select: { creatorId: true }
-      })
+    if (!eventId) {
+      return NextResponse.json(
+        { message: 'Event ID is required' },
+        { status: 400 }
+      )
+    }
 
-      if (!event || event.creatorId !== session.user.id) {
-        return NextResponse.json(
-          { message: 'Only the event creator can edit guest names' },
-          { status: 403 }
-        )
+    // Verify the caller is the creator of the event
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { creatorId: true }
+    })
+
+    if (!event || event.creatorId !== session.user.id) {
+      return NextResponse.json(
+        { message: 'Only the event creator can edit guest names' },
+        { status: 403 }
+      )
+    }
+
+    // Verify the user being renamed is actually an RSVP on this event
+    const rsvp = await prisma.rSVP.findUnique({
+      where: {
+        userId_eventId: {
+          userId,
+          eventId
+        }
       }
+    })
+
+    if (!rsvp) {
+      return NextResponse.json(
+        { message: 'This user is not attending this event' },
+        { status: 404 }
+      )
     }
 
     const updatedUser = await prisma.user.update({
@@ -55,7 +77,7 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating user:', error)
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: 'Could not update name' },
       { status: 500 }
     )
   }
