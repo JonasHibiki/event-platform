@@ -108,7 +108,7 @@ function FilterModal({ isOpen, onClose, title, children }: { isOpen: boolean; on
 }
 
 // ======================== SEARCHABLE LOCATION DROPDOWN ========================
-function LocationDropdown({ value, onChange, cities }: { value: string; onChange: (city: string) => void; cities: string[] }) {
+function LocationDropdown({ value, onChange, cities }: { value: string; onChange: (city: string) => void; cities: readonly string[] }) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
