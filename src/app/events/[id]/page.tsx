@@ -119,10 +119,54 @@ function DeleteConfirmModal({
   )
 }
 
-function PublicEventView({
-  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick
+function GuestListModal({
+  rsvps, session, isOpen, onClose
 }: {
-  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
+  rsvps: Event['rsvps']; session: SessionData | null; isOpen: boolean; onClose: () => void
+}) {
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-[#111] border border-[#2a2a2a] rounded-t-2xl sm:rounded-xl w-full sm:max-w-sm max-h-[70vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1e1e1e]">
+          <div>
+            <h3 className="text-[16px] font-semibold text-[#f5f5f5]">Guest list</h3>
+            <p className="text-[12px] text-[#666] mt-0.5">{rsvps.length} {rsvps.length === 1 ? 'person' : 'people'} going</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1a1a1a] transition-colors">
+            <svg className="w-4 h-4 text-[#666]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className="overflow-y-auto px-5 py-3 flex-1">
+          {rsvps.length > 0 ? (
+            <div>
+              {rsvps.map(rsvp => (
+                <div key={rsvp.id} className="flex items-center gap-3 py-3 border-b border-[#1e1e1e] last:border-0">
+                  <div className="w-[36px] h-[36px] rounded-full bg-[#1a1a1a] flex items-center justify-center text-[13px] font-semibold text-[#a0a0a0] flex-shrink-0">
+                    {rsvp.user.username[0].toUpperCase()}
+                  </div>
+                  <span className="text-[14px] font-medium text-[#f5f5f5]">{rsvp.user.username}</span>
+                  {rsvp.user.id === session?.user?.id && (
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded ml-auto">You</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <div className="text-[14px] text-[#666]">No one yet</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PublicEventView({
+  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList
+}: {
+  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void
 }) {
   return (
     <div className="max-w-[720px] mx-auto px-5 pb-28 sm:pb-10">
@@ -210,31 +254,28 @@ function PublicEventView({
 
         <div className="h-px bg-[#1e1e1e] mb-8" />
 
-        <div className="mb-10">
+        <button onClick={onShowGuestList} className="w-full mb-10 text-left group">
           <div className="flex items-center justify-between mb-4">
             <div className="text-[13px] font-semibold uppercase tracking-wider text-[#666]">Who&apos;s going</div>
-            <span className="text-[13px] text-[#666] font-medium">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'}</span>
+            <span className="text-[13px] text-[#666] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
           </div>
           {event.rsvps.length > 0 ? (
-            <div>
-              {event.rsvps.map(rsvp => (
-                <div key={rsvp.id} className="flex items-center gap-3 py-2.5 border-b border-[#1e1e1e] last:border-0">
-                  <div className="w-[34px] h-[34px] rounded-full bg-[#1a1a1a] flex items-center justify-center text-[13px] font-semibold text-[#a0a0a0] flex-shrink-0">
-                    {rsvp.user.username[0].toUpperCase()}
-                  </div>
-                  <span className="text-[14px] font-medium text-[#f5f5f5]">{rsvp.user.username}</span>
-                  {rsvp.user.id === session?.user?.id && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded ml-auto">You</span>
-                  )}
+            <div className="flex">
+              {event.rsvps.slice(0, 8).map((rsvp, i) => (
+                <div key={rsvp.id} className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[12px] font-semibold text-[#a0a0a0]" style={{ marginLeft: i > 0 ? '-8px' : '0', zIndex: 10 - i }}>
+                  {rsvp.user.username[0].toUpperCase()}
                 </div>
               ))}
+              {event.rsvps.length > 8 && (
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#666]" style={{ marginLeft: '-8px' }}>
+                  +{event.rsvps.length - 8}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="text-center py-10">
-              <div className="text-[14px] text-[#666]">No one has RSVP&apos;d yet</div>
-            </div>
+            <div className="text-[14px] text-[#666]">No one yet</div>
           )}
-        </div>
+        </button>
       </div>
 
       {isUpcoming && !isCreator && (
@@ -252,9 +293,9 @@ function PublicEventView({
 }
 
 function PrivateEventView({
-  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick
+  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList
 }: {
-  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
+  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void
 }) {
   return (
     <div>
@@ -309,10 +350,10 @@ function PrivateEventView({
           </div>
         )}
 
-        <div className="mb-10">
+        <button onClick={onShowGuestList} className="mb-10 text-left group w-full">
           <div className="flex items-center gap-2.5 mb-4">
             <span className="text-[13px] font-semibold text-[#666]">Going</span>
-            <span className="text-[12px] text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'}</span>
+            <span className="text-[12px] text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
           </div>
           {event.rsvps.length > 0 && (
             <div className="flex">
@@ -328,7 +369,7 @@ function PrivateEventView({
               )}
             </div>
           )}
-        </div>
+        </button>
 
         {event.description && (
           <p className="text-[14px] leading-[1.7] text-[#666] whitespace-pre-wrap pt-8 border-t border-[#1e1e1e]">{event.description}</p>
@@ -389,6 +430,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, isDeleting: false })
   const [guestModal, setGuestModal] = useState(false)
+  const [guestListModal, setGuestListModal] = useState(false)
   const [guestRsvpDone, setGuestRsvpDone] = useState(false)
 
   // Check localStorage for guest RSVP on mount
@@ -507,13 +549,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const isUpcoming = new Date(event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
-  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }) }
+  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }), onShowGuestList: () => setGuestListModal(true) }
 
   return (
     <>
       {isPrivate ? <PrivateEventView {...viewProps} /> : <PublicEventView {...viewProps} />}
       <DeleteConfirmModal event={event} isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, isDeleting: false })} onConfirm={handleDeleteConfirm} isDeleting={deleteModal.isDeleting} />
       <GuestRsvpModal isOpen={guestModal} onClose={() => setGuestModal(false)} onSubmit={(name) => handleRsvp(name)} isLoading={rsvpLoading} />
+      <GuestListModal rsvps={event.rsvps} session={session} isOpen={guestListModal} onClose={() => setGuestListModal(false)} />
     </>
   )
 }
