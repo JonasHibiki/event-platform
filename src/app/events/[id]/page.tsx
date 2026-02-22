@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, use, useCallback } from 'react'
+import { useState, useEffect, use, useCallback, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -51,7 +51,7 @@ function formatTimeRange(start: string, end: string): string {
 }
 
 const CalendarIcon = () => (
-  <svg className="w-[18px] h-[18px] text-[#666] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg className="w-[18px] h-[18px] text-[#888] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <rect x="3" y="4" width="18" height="18" rx="2"/>
     <line x1="16" y1="2" x2="16" y2="6"/>
     <line x1="8" y1="2" x2="8" y2="6"/>
@@ -60,14 +60,14 @@ const CalendarIcon = () => (
 )
 
 const ClockIcon = () => (
-  <svg className="w-[18px] h-[18px] text-[#666] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg className="w-[18px] h-[18px] text-[#888] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="12" r="10"/>
     <polyline points="12 6 12 12 16 14"/>
   </svg>
 )
 
 const PinIcon = () => (
-  <svg className="w-[18px] h-[18px] text-[#666] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <svg className="w-[18px] h-[18px] text-[#888] flex-shrink-0 mt-px" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
     <circle cx="12" cy="10" r="3"/>
   </svg>
@@ -107,7 +107,7 @@ function DeleteConfirmModal({
             </span>
           )}
         </p>
-        <p className="text-[12px] text-[#666] mb-6">This action cannot be undone.</p>
+        <p className="text-[12px] text-[#888] mb-6">This action cannot be undone.</p>
         <div className="flex gap-3 justify-end">
           <button onClick={onClose} disabled={isDeleting} className="px-4 py-2 text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] disabled:opacity-50 transition-colors">Cancel</button>
           <button onClick={onConfirm} disabled={isDeleting} className="px-4 py-2 text-[13px] font-medium bg-[#ef4444] text-white rounded-lg hover:bg-[#dc2626] disabled:opacity-50 transition-colors">
@@ -120,10 +120,26 @@ function DeleteConfirmModal({
 }
 
 function GuestListModal({
-  rsvps, session, isOpen, onClose
+  rsvps, session, isOpen, onClose, isCreator, onRemoveGuest, removingId, onRenameGuest
 }: {
-  rsvps: Event['rsvps']; session: SessionData | null; isOpen: boolean; onClose: () => void
+  rsvps: Event['rsvps']; session: SessionData | null; isOpen: boolean; onClose: () => void; isCreator: boolean; onRemoveGuest: (rsvpId: string) => void; removingId: string | null; onRenameGuest: (userId: string, newName: string) => void
 }) {
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+
+  const startEditing = (userId: string, currentName: string) => {
+    setEditingUserId(userId)
+    setEditName(currentName)
+  }
+
+  const saveEdit = () => {
+    if (editingUserId && editName.trim()) {
+      onRenameGuest(editingUserId, editName.trim())
+      setEditingUserId(null)
+      setEditName('')
+    }
+  }
+
   if (!isOpen) return null
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
@@ -131,10 +147,10 @@ function GuestListModal({
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1e1e1e]">
           <div>
             <h3 className="text-[16px] font-semibold text-[#f5f5f5]">Guest list</h3>
-            <p className="text-[12px] text-[#666] mt-0.5">{rsvps.length} {rsvps.length === 1 ? 'person' : 'people'} going</p>
+            <p className="text-[12px] text-[#888] mt-0.5">{rsvps.length} {rsvps.length === 1 ? 'person' : 'people'} going</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1a1a1a] transition-colors">
-            <svg className="w-4 h-4 text-[#666]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <svg className="w-4 h-4 text-[#888]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-3 flex-1">
@@ -143,18 +159,63 @@ function GuestListModal({
               {rsvps.map(rsvp => (
                 <div key={rsvp.id} className="flex items-center gap-3 py-3 border-b border-[#1e1e1e] last:border-0">
                   <div className="w-[36px] h-[36px] rounded-full bg-[#1a1a1a] flex items-center justify-center text-[13px] font-semibold text-[#a0a0a0] flex-shrink-0">
-                    {rsvp.user.username[0].toUpperCase()}
+                    {(editingUserId === rsvp.user.id ? editName : rsvp.user.username)[0]?.toUpperCase() || '?'}
                   </div>
-                  <span className="text-[14px] font-medium text-[#f5f5f5]">{rsvp.user.username}</span>
-                  {rsvp.user.id === session?.user?.id && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded ml-auto">You</span>
+                  {editingUserId === rsvp.user.id ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        maxLength={50}
+                        autoFocus
+                        className="flex-1 px-2 py-1 rounded text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] focus:border-[#444] transition-colors"
+                        onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingUserId(null) }}
+                      />
+                      <button onClick={saveEdit} className="text-[#22c55e] hover:text-[#4ade80] transition-colors p-1" title="Save">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+                      <button onClick={() => setEditingUserId(null)} className="text-[#888] hover:text-[#a0a0a0] transition-colors p-1" title="Cancel">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-[14px] font-medium text-[#f5f5f5] flex-1">{rsvp.user.username}</span>
+                      {rsvp.user.id === session?.user?.id && (
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded">You</span>
+                      )}
+                      {isCreator && (
+                        <div className="flex items-center gap-1 ml-auto">
+                          <button
+                            onClick={() => startEditing(rsvp.user.id, rsvp.user.username)}
+                            className="text-[#888] hover:text-[#a0a0a0] transition-colors p-1"
+                            title="Edit name"
+                          >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button
+                            onClick={() => onRemoveGuest(rsvp.id)}
+                            disabled={removingId === rsvp.id}
+                            className="text-[#888] hover:text-[#ef4444] transition-colors disabled:opacity-40 p-1"
+                            title="Remove guest"
+                          >
+                            {removingId === rsvp.id ? (
+                              <div className="w-3.5 h-3.5 border-2 border-[#888] border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-10">
-              <div className="text-[14px] text-[#666]">No one yet</div>
+              <div className="text-[14px] text-[#888]">No one yet</div>
             </div>
           )}
         </div>
@@ -164,13 +225,13 @@ function GuestListModal({
 }
 
 function PublicEventView({
-  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList
+  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList, onShareClick
 }: {
-  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void
+  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void; onShareClick: () => void
 }) {
   return (
     <div className="max-w-[720px] mx-auto px-5 pb-28 sm:pb-10">
-      <Link href="/events" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] py-4 transition-colors">
+      <Link href="/events" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] py-4 transition-colors">
         <ArrowLeftIcon /> Back
       </Link>
 
@@ -188,7 +249,7 @@ function PublicEventView({
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             {event.category && <span className="text-[12px] font-semibold uppercase tracking-wider text-[#a0a0a0]">{event.category}</span>}
             {event.category && event.location !== 'Private event' && <span className="w-[3px] h-[3px] rounded-full bg-[#666]" />}
-            {event.location !== 'Private event' && <span className="text-[12px] font-medium text-[#666]">{event.location}</span>}
+            {event.location !== 'Private event' && <span className="text-[12px] font-medium text-[#888]">{event.location}</span>}
           </div>
         )}
 
@@ -196,8 +257,9 @@ function PublicEventView({
 
         {isCreator && (
           <div className="flex items-center gap-4 mb-6">
-            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] transition-colors">Edit</Link>
-            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#666] hover:text-[#ef4444] transition-colors">Delete</button>
+            <button onClick={onShareClick} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
+            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
+            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
           </div>
         )}
 
@@ -205,21 +267,21 @@ function PublicEventView({
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <CalendarIcon />
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#666] mb-0.5">Date</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Date</div>
               <div className="text-[14px] text-[#f5f5f5]">{formatDate(event.startDate)}</div>
             </div>
           </div>
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <ClockIcon />
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#666] mb-0.5">Time</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Time</div>
               <div className="text-[14px] text-[#f5f5f5]">{formatTimeRange(event.startDate, event.endDate)}</div>
             </div>
           </div>
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <PinIcon />
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#666] mb-0.5">Location</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Location</div>
               <div className="text-[14px] text-[#f5f5f5]">{event.address}</div>
               {event.locationLink && (
                 <a href={event.locationLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[13px] text-[#a0a0a0] hover:text-[#f5f5f5] mt-1 transition-colors">
@@ -245,19 +307,19 @@ function PublicEventView({
 
         {!isUpcoming && (
           <div className="flex items-center px-4 py-3 bg-[#111] border border-[#2a2a2a] rounded-xl mb-10">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#666]">Event ended</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#888]">Event ended</span>
           </div>
         )}
 
-        <div className="text-[13px] font-semibold uppercase tracking-wider text-[#666] mb-3">About</div>
+        <div className="text-[13px] font-semibold uppercase tracking-wider text-[#888] mb-3">About</div>
         <p className="text-[15px] leading-[1.7] text-[#a0a0a0] whitespace-pre-wrap mb-10">{event.description}</p>
 
         <div className="h-px bg-[#1e1e1e] mb-8" />
 
         <button onClick={onShowGuestList} className="w-full mb-10 text-left group">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[13px] font-semibold uppercase tracking-wider text-[#666]">Who&apos;s going</div>
-            <span className="text-[13px] text-[#666] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
+            <div className="text-[13px] font-semibold uppercase tracking-wider text-[#888]">Who&apos;s going</div>
+            <span className="text-[13px] text-[#888] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
           </div>
           {event.rsvps.length > 0 ? (
             <div className="flex">
@@ -267,13 +329,13 @@ function PublicEventView({
                 </div>
               ))}
               {event.rsvps.length > 8 && (
-                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#666]" style={{ marginLeft: '-8px' }}>
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
                   +{event.rsvps.length - 8}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-[14px] text-[#666]">No one yet</div>
+            <div className="text-[14px] text-[#888]">No one yet</div>
           )}
         </button>
       </div>
@@ -293,9 +355,9 @@ function PublicEventView({
 }
 
 function PrivateEventView({
-  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList
+  event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick, onShowGuestList, onShareClick
 }: {
-  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void
+  event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void; onShareClick: () => void
 }) {
   return (
     <div>
@@ -311,13 +373,13 @@ function PrivateEventView({
       </div>
 
       <div className="max-w-[520px] mx-auto px-6 -mt-10 relative pb-28 sm:pb-10">
-        <div className="text-[11px] font-semibold uppercase tracking-[1.2px] text-[#666] mb-4">You&apos;re invited</div>
         <h1 className="text-[32px] sm:text-[42px] font-bold leading-[1.1] tracking-tight text-[#f5f5f5] mb-8">{event.title}</h1>
 
         {isCreator && (
           <div className="flex items-center gap-4 mb-6">
-            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] transition-colors">Edit</Link>
-            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#666] hover:text-[#ef4444] transition-colors">Delete</button>
+            <button onClick={onShareClick} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
+            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
+            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
           </div>
         )}
 
@@ -326,7 +388,7 @@ function PrivateEventView({
             <CalendarIcon />
             <div>
               <div className="text-[15px] font-medium text-[#f5f5f5]">{formatDate(event.startDate)}</div>
-              <div className="text-[13px] text-[#666] mt-0.5">{formatTimeRange(event.startDate, event.endDate)}</div>
+              <div className="text-[13px] text-[#888] mt-0.5">{formatTimeRange(event.startDate, event.endDate)}</div>
             </div>
           </div>
           <div className="flex items-start gap-3.5">
@@ -352,8 +414,8 @@ function PrivateEventView({
 
         <button onClick={onShowGuestList} className="mb-10 text-left group w-full">
           <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-[13px] font-semibold text-[#666]">Going</span>
-            <span className="text-[12px] text-[#666] bg-[#1a1a1a] px-2 py-0.5 rounded group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
+            <span className="text-[13px] font-semibold text-[#888]">Going</span>
+            <span className="text-[12px] text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
           </div>
           {event.rsvps.length > 0 && (
             <div className="flex">
@@ -363,7 +425,7 @@ function PrivateEventView({
                 </div>
               ))}
               {event.rsvps.length > 5 && (
-                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#666]" style={{ marginLeft: '-8px' }}>
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
                   +{event.rsvps.length - 5}
                 </div>
               )}
@@ -372,7 +434,7 @@ function PrivateEventView({
         </button>
 
         {event.description && (
-          <p className="text-[14px] leading-[1.7] text-[#666] whitespace-pre-wrap pt-8 border-t border-[#1e1e1e]">{event.description}</p>
+          <p className="text-[14px] leading-[1.7] text-[#888] whitespace-pre-wrap pt-8 border-t border-[#1e1e1e]">{event.description}</p>
         )}
       </div>
 
@@ -388,29 +450,43 @@ function PrivateEventView({
 }
 
 function GuestRsvpModal({
-  isOpen, onClose, onSubmit, isLoading
+  isOpen, onClose, onSubmit, isLoading, initialName
 }: {
-  isOpen: boolean; onClose: () => void; onSubmit: (name: string) => void; isLoading: boolean
+  isOpen: boolean; onClose: () => void; onSubmit: (name: string) => void; isLoading: boolean; initialName?: string
 }) {
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName || '')
+
+  useEffect(() => {
+    if (initialName) setName(initialName)
+  }, [initialName])
+
   if (!isOpen) return null
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
       <div className="bg-[#111] border border-[#2a2a2a] rounded-t-2xl sm:rounded-xl p-6 w-full sm:max-w-sm">
-        <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-1">What&apos;s your name?</h3>
-        <p className="text-[13px] text-[#666] mb-5">So people know who&apos;s coming.</p>
+        {initialName ? (
+          <>
+            <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-1">Hey {initialName}!</h3>
+            <p className="text-[13px] text-[#888] mb-5">You&apos;ve been invited. Confirm below to RSVP.</p>
+          </>
+        ) : (
+          <>
+            <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-1">What&apos;s your name?</h3>
+            <p className="text-[13px] text-[#888] mb-5">So people know who&apos;s coming.</p>
+          </>
+        )}
         <input
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="Your name"
           maxLength={50}
-          autoFocus
+          autoFocus={!initialName}
           className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-4"
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) onSubmit(name.trim()) }}
         />
         <div className="flex gap-3">
-          <button onClick={onClose} disabled={isLoading} className="flex-1 py-2.5 text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] transition-colors">Cancel</button>
+          <button onClick={onClose} disabled={isLoading} className="flex-1 py-2.5 text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Cancel</button>
           <button onClick={() => name.trim() && onSubmit(name.trim())} disabled={isLoading || !name.trim()} className="flex-1 py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all">
             {isLoading ? 'Joining...' : "I'm going"}
           </button>
@@ -420,10 +496,228 @@ function GuestRsvpModal({
   )
 }
 
+function InviteModal({
+  isOpen, onClose, eventId
+}: {
+  isOpen: boolean; onClose: () => void; eventId: string
+}) {
+  const [mode, setMode] = useState<'menu' | 'single' | 'bulk'>('menu')
+  const [singleName, setSingleName] = useState('')
+  const [bulkNames, setBulkNames] = useState('')
+  const [copied, setCopied] = useState<string | null>(null)
+  const [bulkLinks, setBulkLinks] = useState<Array<{ name: string; url: string }>>([])
+
+  const baseUrl = typeof window !== 'undefined' ? `${window.location.origin}/events/${eventId}` : ''
+
+  const getInviteUrl = (name: string) => `${baseUrl}?invite=${encodeURIComponent(name.trim())}`
+
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(key)
+      setTimeout(() => setCopied(null), 2000)
+    } catch { /* ignore */ }
+  }
+
+  const generateBulkLinks = () => {
+    const names = bulkNames.split('\n').map(n => n.trim()).filter(Boolean)
+    setBulkLinks(names.map(name => ({ name, url: getInviteUrl(name) })))
+  }
+
+  const copyAllLinks = async () => {
+    const text = bulkLinks.map(l => `${l.name}: ${l.url}`).join('\n')
+    await copyToClipboard(text, 'all')
+  }
+
+  const handleClose = () => {
+    setMode('menu')
+    setSingleName('')
+    setBulkNames('')
+    setBulkLinks([])
+    setCopied(null)
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={handleClose}>
+      <div className="bg-[#111] border border-[#2a2a2a] rounded-t-2xl sm:rounded-xl w-full sm:max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1e1e1e]">
+          <div className="flex items-center gap-3">
+            {mode !== 'menu' && (
+              <button onClick={() => { setMode('menu'); setBulkLinks([]) }} className="text-[#888] hover:text-[#a0a0a0] transition-colors">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+            )}
+            <h3 className="text-[16px] font-semibold text-[#f5f5f5]">
+              {mode === 'menu' ? 'Share event' : mode === 'single' ? 'Personal invite' : 'Paste guestlist'}
+            </h3>
+          </div>
+          <button onClick={handleClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1a1a1a] transition-colors">
+            <svg className="w-4 h-4 text-[#888]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-4 flex-1">
+          {mode === 'menu' && (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => copyToClipboard(baseUrl, 'open')}
+                className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] transition-colors text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#222] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-[#a0a0a0]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[14px] font-medium text-[#f5f5f5]">Copy link</div>
+                  <div className="text-[12px] text-[#888]">Share one link with everyone</div>
+                </div>
+                {copied === 'open' && <span className="text-[12px] font-medium text-[#22c55e]">Copied</span>}
+              </button>
+
+              <button
+                onClick={() => setMode('single')}
+                className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] transition-colors text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#222] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-[#a0a0a0]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[14px] font-medium text-[#f5f5f5]">Personal invite</div>
+                  <div className="text-[12px] text-[#888]">Name pre-filled when they open</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setMode('bulk')}
+                className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] transition-colors text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#222] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-[#a0a0a0]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[14px] font-medium text-[#f5f5f5]">Paste guestlist</div>
+                  <div className="text-[12px] text-[#888]">Generate links for multiple guests</div>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {mode === 'single' && (
+            <div>
+              <input
+                type="text"
+                value={singleName}
+                onChange={e => setSingleName(e.target.value)}
+                placeholder="Guest name"
+                maxLength={50}
+                autoFocus
+                className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3"
+                onKeyDown={e => { if (e.key === 'Enter' && singleName.trim()) copyToClipboard(getInviteUrl(singleName), 'single') }}
+              />
+              {singleName.trim() && (
+                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 mb-3">
+                  <div className="text-[12px] text-[#888] mb-1.5">Invite link for {singleName.trim()}</div>
+                  <div className="text-[12px] text-[#a0a0a0] break-all font-mono">{getInviteUrl(singleName)}</div>
+                </div>
+              )}
+              <button
+                onClick={() => copyToClipboard(getInviteUrl(singleName), 'single')}
+                disabled={!singleName.trim()}
+                className="w-full py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
+              >
+                {copied === 'single' ? 'Copied!' : 'Copy invite link'}
+              </button>
+            </div>
+          )}
+
+          {mode === 'bulk' && (
+            <div>
+              {bulkLinks.length === 0 ? (
+                <>
+                  <p className="text-[13px] text-[#888] mb-3">Paste names, one per line</p>
+                  <textarea
+                    value={bulkNames}
+                    onChange={e => setBulkNames(e.target.value)}
+                    placeholder={"Jonas Gripsrud\nOla Nordmann\nKari Nordmann"}
+                    rows={6}
+                    autoFocus
+                    className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3 resize-none"
+                  />
+                  <button
+                    onClick={generateBulkLinks}
+                    disabled={!bulkNames.trim()}
+                    className="w-full py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
+                  >
+                    Generate links
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[13px] text-[#888]">{bulkLinks.length} {bulkLinks.length === 1 ? 'link' : 'links'} generated</span>
+                    <button onClick={copyAllLinks} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">
+                      {copied === 'all' ? 'Copied all!' : 'Copy all'}
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {bulkLinks.map((link, i) => (
+                      <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-medium text-[#f5f5f5] mb-0.5">{link.name}</div>
+                          <div className="text-[11px] text-[#888] break-all font-mono">{link.url}</div>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(link.url, `bulk-${i}`)}
+                          className="text-[#888] hover:text-[#a0a0a0] transition-colors flex-shrink-0 mt-0.5"
+                        >
+                          {copied === `bulk-${i}` ? (
+                            <svg className="w-4 h-4 text-[#22c55e]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                          ) : (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="9" y="9" width="13" height="13" rx="2"/>
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[14px]">Loading event...</div></div>}>
+      <EventDetailContent params={params} />
+    </Suspense>
+  )
+}
+
+function EventDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: session } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteName = searchParams.get('invite') || ''
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -431,7 +725,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, isDeleting: false })
   const [guestModal, setGuestModal] = useState(false)
   const [guestListModal, setGuestListModal] = useState(false)
+  const [inviteModal, setInviteModal] = useState(false)
   const [guestRsvpDone, setGuestRsvpDone] = useState(false)
+  const [removingGuestId, setRemovingGuestId] = useState<string | null>(null)
 
   // Check localStorage for guest RSVP on mount
   useEffect(() => {
@@ -440,6 +736,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       if (guestRsvps[id]) setGuestRsvpDone(true)
     } catch { /* ignore */ }
   }, [id])
+
+  // Auto-open RSVP modal if invite param is present and user hasn't RSVP'd
+  useEffect(() => {
+    if (inviteName && !guestRsvpDone && !session && event && !loading) {
+      setGuestModal(true)
+    }
+  }, [inviteName, guestRsvpDone, session, event, loading])
 
   const userRsvp = event?.rsvps.find(rsvp => rsvp.user.id === session?.user?.id)
   const hasRsvpd = !!userRsvp || (!session && guestRsvpDone)
@@ -524,6 +827,28 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     finally { setRsvpLoading(false) }
   }
 
+  const handleRenameGuest = async (userId: string, newName: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newName, eventId: id })
+      })
+      if (response.ok) await fetchEvent()
+      else setError('Could not update name')
+    } catch { setError('Something went wrong') }
+  }
+
+  const handleRemoveGuest = async (rsvpId: string) => {
+    setRemovingGuestId(rsvpId)
+    try {
+      const response = await fetch(`/api/events/${id}/rsvp/${rsvpId}`, { method: 'DELETE' })
+      if (response.ok) await fetchEvent()
+      else setError('Could not remove guest')
+    } catch { setError('Something went wrong') }
+    finally { setRemovingGuestId(null) }
+  }
+
   const handleDeleteConfirm = async () => {
     if (!event) return
     setDeleteModal(prev => ({ ...prev, isDeleting: true }))
@@ -534,14 +859,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     } catch { setError('Something went wrong'); setDeleteModal({ isOpen: false, isDeleting: false }) }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#666] text-[14px]">Loading event...</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[14px]">Loading event...</div></div>
 
   if (error || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-[18px] font-semibold text-[#f5f5f5] mb-2">{error || 'Not found'}</h2>
-          <Link href="/events" className="text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] transition-colors">Back to events</Link>
+          <Link href="/events" className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Back to events</Link>
         </div>
       </div>
     )
@@ -549,14 +874,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const isUpcoming = new Date(event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
-  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }), onShowGuestList: () => setGuestListModal(true) }
+  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }), onShowGuestList: () => setGuestListModal(true), onShareClick: () => setInviteModal(true) }
 
   return (
     <>
       {isPrivate ? <PrivateEventView {...viewProps} /> : <PublicEventView {...viewProps} />}
       <DeleteConfirmModal event={event} isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, isDeleting: false })} onConfirm={handleDeleteConfirm} isDeleting={deleteModal.isDeleting} />
-      <GuestRsvpModal isOpen={guestModal} onClose={() => setGuestModal(false)} onSubmit={(name) => handleRsvp(name)} isLoading={rsvpLoading} />
-      <GuestListModal rsvps={event.rsvps} session={session} isOpen={guestListModal} onClose={() => setGuestListModal(false)} />
+      <GuestRsvpModal isOpen={guestModal} onClose={() => setGuestModal(false)} onSubmit={(name) => handleRsvp(name)} isLoading={rsvpLoading} initialName={inviteName || undefined} />
+      <GuestListModal rsvps={event.rsvps} session={session} isOpen={guestListModal} onClose={() => setGuestListModal(false)} isCreator={!!isCreator} onRemoveGuest={handleRemoveGuest} removingId={removingGuestId} onRenameGuest={handleRenameGuest} />
+      <InviteModal isOpen={inviteModal} onClose={() => setInviteModal(false)} eventId={id} />
     </>
   )
 }

@@ -90,7 +90,7 @@ function FilterModal({ isOpen, onClose, title, children }: { isOpen: boolean; on
       <div onClick={e => e.stopPropagation()} className="bg-[#111] border border-[#2a2a2a] rounded-t-2xl sm:rounded-xl p-5 w-full sm:max-w-md max-h-[70vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[15px] font-semibold text-[#f5f5f5]">{title}</h3>
-          <button onClick={onClose} className="text-[#666] hover:text-[#a0a0a0] transition-colors p-1"><XIcon /></button>
+          <button onClick={onClose} className="text-[#888] hover:text-[#a0a0a0] transition-colors p-1"><XIcon /></button>
         </div>
         {children}
       </div>
@@ -128,16 +128,16 @@ function DateFilterContent({ startDate, endDate, onApply, onClear }: { startDate
     <div>
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-[12px] font-medium text-[#666] mb-2">From</label>
+          <label className="block text-[12px] font-medium text-[#888] mb-2">From</label>
           <input type="date" value={s} onChange={ev => setS(ev.target.value)} className="w-full px-3 py-2.5 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[14px] text-[#f5f5f5] focus:outline-none focus:border-[#666]" />
         </div>
         <div>
-          <label className="block text-[12px] font-medium text-[#666] mb-2">To</label>
+          <label className="block text-[12px] font-medium text-[#888] mb-2">To</label>
           <input type="date" value={e} onChange={ev => setE(ev.target.value)} min={s} className="w-full px-3 py-2.5 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-[14px] text-[#f5f5f5] focus:outline-none focus:border-[#666]" />
         </div>
       </div>
       <div className="flex gap-3 justify-end">
-        <button onClick={onClear} className="px-4 py-2 text-[13px] font-medium text-[#666] hover:text-[#a0a0a0] transition-colors">Clear</button>
+        <button onClick={onClear} className="px-4 py-2 text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Clear</button>
         <button onClick={() => onApply(s, e)} className="px-5 py-2 bg-[#f5f5f5] text-[#0a0a0a] rounded-lg text-[13px] font-semibold hover:opacity-85 transition-opacity">Apply</button>
       </div>
     </div>
@@ -170,12 +170,12 @@ function EventCard({ event }: { event: Event }) {
         </div>
         <div className="p-4">
           <h3 className="font-semibold text-[15px] text-[#f5f5f5] mb-2.5 line-clamp-2 leading-snug">{event.title}</h3>
-          <div className="space-y-1.5 text-[13px] text-[#666]">
+          <div className="space-y-1.5 text-[13px] text-[#888]">
             <div className="flex items-center gap-1.5"><CalendarSmall /> {formatDate(event.startDate)}</div>
             <div className="flex items-center gap-1.5"><PinSmall /> <span className="line-clamp-1">{event.address}</span></div>
           </div>
           <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-[#1e1e1e]">
-            <span className="text-[12px] text-[#666]">{event._count.rsvps} going</span>
+            <span className="text-[12px] text-[#888]">{event._count.rsvps} going</span>
             {event.ticketLink && <span className="text-[12px] text-[#a0a0a0] font-medium">Tickets</span>}
           </div>
         </div>
@@ -219,7 +219,7 @@ export default function EventsPage() {
   const past = filteredEvents.filter(e => new Date(e.startDate) <= new Date())
   const hasFilters = filters.category || filters.city || filters.startDate || filters.endDate
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#666] text-[14px]">Loading events...</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[14px]">Loading events...</div></div>
 
   return (
     <div className="min-h-screen">
@@ -256,48 +256,48 @@ export default function EventsPage() {
         {/* ==================== SECONDARY FILTERS ==================== */}
         <div className="flex flex-wrap gap-2 mb-8">
           <button onClick={() => setModals(p => ({ ...p, city: true }))}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.city ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#666] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.city ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#888] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
             <MapPinIcon /> {filters.city || 'Location'}
           </button>
 
           <button onClick={() => { const d = new Date().toISOString().split('T')[0]; filters.quickFilter === 'today' ? setFilters(p => ({ ...p, startDate: '', endDate: '', quickFilter: '' })) : setFilters(p => ({ ...p, startDate: d, endDate: d, quickFilter: 'today' })) }}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.quickFilter === 'today' ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#666] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.quickFilter === 'today' ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#888] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
             <SunIcon /> Today
           </button>
 
           <button onClick={() => { if (filters.quickFilter === 'weekend') { setFilters(p => ({ ...p, startDate: '', endDate: '', quickFilter: '' })) } else { const { start, end } = getWeekendDates(); setFilters(p => ({ ...p, startDate: start, endDate: end, quickFilter: 'weekend' })) } }}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.quickFilter === 'weekend' ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#666] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${filters.quickFilter === 'weekend' ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#888] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
             <WeekendIcon /> This weekend
           </button>
 
           <button onClick={() => setModals(p => ({ ...p, date: true }))}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${(filters.startDate || filters.endDate) && !filters.quickFilter ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#666] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${(filters.startDate || filters.endDate) && !filters.quickFilter ? 'bg-[#222] text-[#f5f5f5] border border-[#666]' : 'bg-[#111] border border-[#2a2a2a] text-[#888] hover:border-[#666] hover:text-[#a0a0a0]'}`}>
             <DateRangeIcon /> Pick dates
           </button>
 
           {hasFilters && (
             <button onClick={() => setFilters({ category: '', city: '', startDate: '', endDate: '', quickFilter: '' })}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium bg-[#1a1a1a] text-[#666] hover:text-[#a0a0a0] transition-colors">
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium bg-[#1a1a1a] text-[#888] hover:text-[#a0a0a0] transition-colors">
               <XIcon /> Clear
             </button>
           )}
         </div>
 
-        {hasFilters && <div className="mb-6 text-[13px] text-[#666]">Showing {filteredEvents.length} of {events.length} events</div>}
+        {hasFilters && <div className="mb-6 text-[13px] text-[#888]">Showing {filteredEvents.length} of {events.length} events</div>}
 
         {error && <div className="bg-[#111] border border-[#ef4444]/30 rounded-xl p-4 mb-8"><p className="text-[#ef4444] text-[14px]">{error}</p></div>}
 
         {/* ==================== EVENT GRID ==================== */}
         {upcoming.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#666] mb-5">Upcoming</h2>
+            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#888] mb-5">Upcoming</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{upcoming.map(e => <EventCard key={e.id} event={e} />)}</div>
           </div>
         )}
 
         {past.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#666] mb-5">Past events</h2>
+            <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[#888] mb-5">Past events</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">{past.map(e => <EventCard key={e.id} event={e} />)}</div>
           </div>
         )}
@@ -305,7 +305,7 @@ export default function EventsPage() {
         {filteredEvents.length === 0 && events.length > 0 && (
           <div className="text-center py-20">
             <h3 className="text-[16px] font-medium text-[#f5f5f5] mb-2">No events found</h3>
-            <p className="text-[14px] text-[#666] mb-6">Try different filters</p>
+            <p className="text-[14px] text-[#888] mb-6">Try different filters</p>
             <button onClick={() => setFilters({ category: '', city: '', startDate: '', endDate: '', quickFilter: '' })} className="bg-[#f5f5f5] text-[#0a0a0a] px-5 py-2.5 rounded-lg text-[14px] font-semibold hover:opacity-85 transition-opacity">Clear filters</button>
           </div>
         )}
@@ -313,7 +313,7 @@ export default function EventsPage() {
         {events.length === 0 && !loading && (
           <div className="text-center py-20">
             <h3 className="text-[16px] font-medium text-[#f5f5f5] mb-2">No events yet</h3>
-            <p className="text-[14px] text-[#666] mb-6">Be the first to create one</p>
+            <p className="text-[14px] text-[#888] mb-6">Be the first to create one</p>
             <Link href="/create" className="inline-block bg-[#f5f5f5] text-[#0a0a0a] px-5 py-2.5 rounded-lg text-[14px] font-semibold hover:opacity-85 transition-opacity">Create event</Link>
           </div>
         )}

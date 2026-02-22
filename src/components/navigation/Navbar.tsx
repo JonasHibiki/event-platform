@@ -44,13 +44,13 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden sm:block flex-1 max-w-[400px] mx-auto relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-[#666] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-[#888] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <Link
             href="/events"
-            className="block w-full bg-[#111] border border-[#2a2a2a] rounded-lg py-2 pl-9 pr-3 text-[13px] text-[#666] hover:border-[#666] transition-colors cursor-pointer"
+            className="block w-full bg-[#111] border border-[#2a2a2a] rounded-lg py-2 pl-9 pr-3 text-[13px] text-[#888] hover:border-[#666] transition-colors cursor-pointer"
           >
             Search events...
           </Link>
@@ -85,7 +85,7 @@ export default function Navbar() {
                 <div className="absolute top-[calc(100%+8px)] right-0 bg-[#111] border border-[#2a2a2a] rounded-xl min-w-[200px] p-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.4)]">
                   <div className="px-3 py-2 mb-1">
                     <div className="text-[13px] font-medium text-[#f5f5f5]">{session.user?.name || 'User'}</div>
-                    <div className="text-[11px] text-[#666]">{session.user?.email}</div>
+                    <div className="text-[11px] text-[#888]">{session.user?.email}</div>
                   </div>
                   <div className="h-px bg-[#1e1e1e] my-1" />
                   <Link
