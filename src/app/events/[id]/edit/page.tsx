@@ -337,7 +337,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     Upload new image
                   </button>
                   <p className="text-xs" style={hintStyle}>
-                    Don't upload to keep current image
+                    Don&apos;t upload to keep current image
                   </p>
                 </div>
               )}

@@ -118,7 +118,8 @@ function DeleteConfirmModal({
 function PublicEventView({
   event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick
 }: {
-  event: Event; session: any; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  event: Event; session: Record<string, unknown> | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
 }) {
   return (
     <div className="max-w-[720px] mx-auto px-5 pb-28 sm:pb-10">
@@ -250,7 +251,8 @@ function PublicEventView({
 function PrivateEventView({
   event, session, isUpcoming, isCreator, userRsvp, rsvpLoading, onRsvp, onDeleteClick
 }: {
-  event: Event; session: any; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  event: Event; session: Record<string, unknown> | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void
 }) {
   return (
     <div>

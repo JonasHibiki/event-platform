@@ -137,7 +137,7 @@ function SigninForm() {
 
           <div className="text-center">
             <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/auth/signup" className="font-medium transition-colors" style={{ color: 'var(--text-secondary)' }}>
                 Sign up
               </Link>

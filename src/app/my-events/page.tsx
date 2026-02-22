@@ -85,7 +85,7 @@ function DeleteConfirmModal({
           Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>&quot;{event.title}&quot;</strong>?
           {event._count.rsvps > 0 && (
             <span className="block mt-2" style={{ color: 'var(--destructive)' }}>
-              {event._count.rsvps} people have RSVP'd to this event.
+              {event._count.rsvps} people have RSVP&apos;d to this event.
             </span>
           )}
         </p>
