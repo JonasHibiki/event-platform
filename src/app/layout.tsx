@@ -16,9 +16,16 @@ export const metadata: Metadata = {
     siteName: "vibber",
     title: "vibber",
     description: "Discover and create events",
+    images: [
+      {
+        url: "/og-image.png",
+        alt: "vibber",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/og-image.png"],
   },
 };
 
