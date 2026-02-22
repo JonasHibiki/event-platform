@@ -8,7 +8,7 @@ const f = createUploadthing();
 
 // FileRouter for your app
 export const ourFileRouter = {
-  // Event image uploader with aggressive compression
+  // Event image uploader
   eventImageUploader: f({ 
     image: { 
       maxFileSize: "4MB",
@@ -21,17 +21,16 @@ export const ourFileRouter = {
     
     // If user is not logged in, throw error
     if (!session?.user?.id) {
-      throw new UploadThingError("Du må være innlogget for å laste opp bilder");
+      throw new UploadThingError("You must be logged in to upload images");
     }
 
     // Pass user data to onUploadComplete
     return { userId: session.user.id };
   })
   .onUploadComplete(async ({ metadata, file }) => {
-    // Log successful upload with compression info
-    console.log("Komprimert bilde lastet opp av bruker:", metadata.userId);
-    console.log("Komprimert fil URL:", file.url);
-    console.log("Fil størrelse:", file.size, "bytes");
+    console.log("Image uploaded by user:", metadata.userId);
+    console.log("File URL:", file.url);
+    console.log("File size:", file.size, "bytes");
 
     // Return compressed file URL for frontend
     return { 

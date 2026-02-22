@@ -33,7 +33,7 @@ export async function GET(
 
     if (!event) {
       return NextResponse.json(
-        { message: 'Arrangementet ble ikke funnet' },
+        { message: 'Event not found' },
         { status: 404 }
       )
     }
@@ -64,7 +64,7 @@ export async function PUT(
     
     if (!session || !session.user?.id) {
       return NextResponse.json(
-        { message: 'Du må være logget inn' },
+        { message: 'You must be logged in' },
         { status: 401 }
       )
     }
@@ -77,14 +77,14 @@ export async function PUT(
 
     if (!existingEvent) {
       return NextResponse.json(
-        { message: 'Arrangementet ble ikke funnet' },
+        { message: 'Event not found' },
         { status: 404 }
       )
     }
 
     if (existingEvent.creatorId !== session.user.id) {
       return NextResponse.json(
-        { message: 'Du kan bare redigere dine egne arrangementer' },
+        { message: 'You can only edit your own events' },
         { status: 403 }
       )
     }
@@ -124,7 +124,7 @@ export async function PUT(
     // Validate category only for public events
     if (visibility === 'public' && !category) {
       return NextResponse.json(
-        { message: 'Kategori er påkrevd for offentlige arrangementer' },
+        { message: 'Category is required for public events' },
         { status: 400 }
       )
     }
@@ -132,7 +132,7 @@ export async function PUT(
     // Validate location only for public events
     if (visibility === 'public' && !location) {
       return NextResponse.json(
-        { message: 'By er påkrevd for offentlige arrangementer' },
+        { message: 'City is required for public events' },
         { status: 400 }
       )
     }
@@ -211,7 +211,7 @@ export async function PUT(
         imageUrl: imageUrl?.trim() || undefined, // Only update if provided
         startDate: start,
         endDate: end,
-        location: location ? location.trim() : 'Privat arrangement',
+        location: location ? location.trim() : 'Private event',
         address: address.trim(),
         locationLink: locationLink?.trim() || null,
         ticketLink: ticketLink?.trim() || null,
@@ -243,7 +243,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating event:', error)
     return NextResponse.json(
-      { message: 'Kunne ikke oppdatere arrangementet' },
+      { message: 'Could not update event' },
       { status: 500 }
     )
   }
@@ -260,7 +260,7 @@ export async function DELETE(
     
     if (!session || !session.user?.id) {
       return NextResponse.json(
-        { message: 'Du må være logget inn' },
+        { message: 'You must be logged in' },
         { status: 401 }
       )
     }
@@ -284,7 +284,7 @@ export async function DELETE(
 
     if (!event) {
       return NextResponse.json(
-        { message: 'Arrangementet ble ikke funnet' },
+        { message: 'Event not found' },
         { status: 404 }
       )
     }
@@ -292,7 +292,7 @@ export async function DELETE(
     // Check if user is the creator
     if (event.creatorId !== session.user.id) {
       return NextResponse.json(
-        { message: 'Du kan bare slette dine egne arrangementer' },
+        { message: 'You can only delete your own events' },
         { status: 403 }
       )
     }
@@ -302,8 +302,8 @@ export async function DELETE(
       where: { id }
     })
 
-    return NextResponse.json({ 
-      message: `Arrangementet "${event.title}" ble slettet`,
+    return NextResponse.json({
+      message: `Event "${event.title}" was deleted`,
       deletedEvent: {
         id: event.id,
         title: event.title,
@@ -314,7 +314,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting event:', error)
     return NextResponse.json(
-      { message: 'Kunne ikke slette arrangementet' },
+      { message: 'Could not delete event' },
       { status: 500 }
     )
   }

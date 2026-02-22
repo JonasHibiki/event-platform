@@ -8,8 +8,8 @@ import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
 import CompressedImageUploader from '@/components/CompressedImageUploader'
 
 const VISIBILITY_OPTIONS = [
-  { value: 'public', label: 'Offentlig arrangement', description: 'Vises i arrangementslistene for alle' },
-  { value: 'private', label: 'Privat arrangement', description: 'Kun tilgjengelig via direktelenke' }
+  { value: 'public', label: 'Public event', description: 'Visible to everyone in event listings' },
+  { value: 'private', label: 'Private event', description: 'Only accessible via direct link' }
 ]
 
 export default function CreateEventPage() {
@@ -19,7 +19,6 @@ export default function CreateEventPage() {
   const [error, setError] = useState('')
   const [imageUrl, setImageUrl] = useState<string>('')
 
-  // Form state with character limits
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,23 +26,21 @@ export default function CreateEventPage() {
     startTime: '',
     endDate: '',
     endTime: '',
-    location: '', // City dropdown (public events only)
-    address: '', // Required address field
+    location: '',
+    address: '',
     locationLink: '',
     ticketLink: '',
     category: '',
-    visibility: 'public' // Default to public
+    visibility: 'public'
   })
 
-  // Character counters
   const titleCharsLeft = 80 - formData.title.length
   const descriptionCharsLeft = 800 - formData.description.length
   const addressCharsLeft = 200 - formData.address.length
 
-  // Redirect if not authenticated
   if (status === 'loading') {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="text-gray-600">Laster...</div>
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+      <div style={{ color: 'var(--text-tertiary)' }}>Loading...</div>
     </div>
   }
 
@@ -54,49 +51,24 @@ export default function CreateEventPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    
-    // Apply character limits but allow pasting (trim at limit instead of preventing)
+
     let finalValue = value
-    if (name === 'title' && value.length > 80) {
-      finalValue = value.slice(0, 80)
-    }
-    if (name === 'description' && value.length > 800) {
-      finalValue = value.slice(0, 800)
-    }
-    if (name === 'address' && value.length > 200) {
-      finalValue = value.slice(0, 200)
-    }
-    
-    // Clear category and location when switching to private
+    if (name === 'title' && value.length > 80) finalValue = value.slice(0, 80)
+    if (name === 'description' && value.length > 800) finalValue = value.slice(0, 800)
+    if (name === 'address' && value.length > 200) finalValue = value.slice(0, 200)
+
     if (name === 'visibility' && finalValue === 'private') {
-      setFormData({
-        ...formData,
-        [name]: finalValue,
-        category: '', // Clear category for private events
-        location: ''  // Clear location for private events
-      })
+      setFormData({ ...formData, [name]: finalValue, category: '', location: '' })
     } else {
-      setFormData({
-        ...formData,
-        [name]: finalValue
-      })
+      setFormData({ ...formData, [name]: finalValue })
     }
   }
 
-  // Ensure paste functionality works
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    // Allow default paste behavior
-    // The handleChange will automatically trim if too long
-  }
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {}
 
   const validateUrl = (url: string): boolean => {
-    if (!url) return true // Optional field
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
-    }
+    if (!url) return true
+    try { new URL(url); return true } catch { return false }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,82 +77,36 @@ export default function CreateEventPage() {
     setError('')
 
     try {
-      // Validate required fields
-      if (!imageUrl) {
-        setError('Arrangementsbilde er påkrevd')
-        setIsSubmitting(false)
-        return
-      }
+      if (!imageUrl) { setError('Event image is required'); setIsSubmitting(false); return }
+      if (!formData.address.trim()) { setError('Venue / Address is required'); setIsSubmitting(false); return }
+      if (formData.visibility === 'public' && !formData.category) { setError('Category is required for public events'); setIsSubmitting(false); return }
+      if (formData.visibility === 'public' && !formData.location) { setError('City is required for public events'); setIsSubmitting(false); return }
+      if (formData.locationLink && !validateUrl(formData.locationLink)) { setError('Please enter a valid URL for venue link'); setIsSubmitting(false); return }
+      if (formData.ticketLink && !validateUrl(formData.ticketLink)) { setError('Please enter a valid URL for ticket link'); setIsSubmitting(false); return }
 
-      if (!formData.address.trim()) {
-        setError('Sted / Adresse er påkrevd')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate category only for public events
-      if (formData.visibility === 'public' && !formData.category) {
-        setError('Kategori er påkrevd for offentlige arrangementer')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate location only for public events
-      if (formData.visibility === 'public' && !formData.location) {
-        setError('By er påkrevd for offentlige arrangementer')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate URLs
-      if (formData.locationLink && !validateUrl(formData.locationLink)) {
-        setError('Vennligst skriv inn en gyldig URL for stedets lenke')
-        setIsSubmitting(false)
-        return
-      }
-
-      if (formData.ticketLink && !validateUrl(formData.ticketLink)) {
-        setError('Vennligst skriv inn en gyldig URL for billettlenke')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate dates
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
       const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
 
-      if (startDateTime >= endDateTime) {
-        setError('Sluttidspunkt må være etter starttidspunkt')
-        setIsSubmitting(false)
-        return
-      }
+      if (startDateTime >= endDateTime) { setError('End time must be after start time'); setIsSubmitting(false); return }
+      if (startDateTime <= new Date()) { setError('Event must start in the future'); setIsSubmitting(false); return }
 
-      if (startDateTime <= new Date()) {
-        setError('Arrangementet må starte i fremtiden')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Create event with compressed image URL from UploadThing
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         startDate: startDateTime.toISOString(),
         endDate: endDateTime.toISOString(),
-        location: formData.visibility === 'public' ? formData.location.trim() : 'Privat arrangement', // Only set city for public events
-        address: formData.address.trim(), // Required field
+        location: formData.visibility === 'public' ? formData.location.trim() : 'Private event',
+        address: formData.address.trim(),
         locationLink: formData.locationLink.trim() || null,
         ticketLink: formData.ticketLink.trim() || null,
-        category: formData.visibility === 'public' ? formData.category : null, // Only set category for public events
+        category: formData.visibility === 'public' ? formData.category : null,
         visibility: formData.visibility,
-        imageUrl // This comes from UploadThing compressed upload
+        imageUrl
       }
 
       const response = await fetch('/api/events/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
       })
 
@@ -189,298 +115,244 @@ export default function CreateEventPage() {
         router.push(`/events/${event.id}`)
       } else {
         const error = await response.json()
-        setError(error.message || 'Kunne ikke opprette arrangement')
+        setError(error.message || 'Could not create event')
       }
     } catch (error) {
-      setError('Noe gikk galt. Vennligst prøv igjen.')
+      setError('Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const inputStyle = {
+    background: 'var(--bg-secondary)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+  }
+
+  const labelStyle = { color: 'var(--text-secondary)' }
+  const hintStyle = { color: 'var(--text-tertiary)' }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8" style={{ background: 'var(--bg-primary)' }}>
       <div className="max-w-2xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Opprett nytt arrangement</h1>
-          
+        <div className="rounded-xl p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+          <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Create new event</h1>
+
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-              <p className="text-red-800">{error}</p>
+            <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <p style={{ color: 'var(--destructive)' }} className="text-sm">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Visibility Setting - Placed first for importance */}
+            {/* Visibility */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Synlighet *
-              </label>
+              <label className="block text-sm font-medium mb-3" style={labelStyle}>Visibility</label>
               <div className="space-y-3">
                 {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-start">
+                  <label key={option.value} className="flex items-start cursor-pointer">
                     <input
                       type="radio"
                       name="visibility"
                       value={option.value}
                       checked={formData.visibility === option.value}
                       onChange={handleChange}
-                      className="mt-1 mr-3"
+                      className="mt-1 mr-3 accent-white"
                       required
                     />
                     <div>
-                      <div className="font-medium text-gray-900">{option.label}</div>
-                      <div className="text-sm text-gray-600">{option.description}</div>
+                      <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
+                      <div className="text-xs" style={hintStyle}>{option.description}</div>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Category - Only show for public events */}
+            {/* Category - public only */}
             {formData.visibility === 'public' && (
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori *
-                </label>
+                <label htmlFor="category" className="block text-sm font-medium mb-2" style={labelStyle}>Category</label>
                 <select
-                  name="category"
-                  id="category"
+                  name="category" id="category"
                   required={formData.visibility === 'public'}
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 >
-                  <option value="">Velg en kategori</option>
+                  <option value="">Select a category</option>
                   {EVENT_CATEGORIES.map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
-                <div className="text-xs text-gray-500 mt-1">
-                  Hjelper folk å finne arrangementet ditt i kategorioversikten
-                </div>
+                <div className="text-xs mt-1" style={hintStyle}>Helps people find your event</div>
               </div>
             )}
 
-            {/* Location/City - Only show for public events */}
+            {/* Location/City - public only */}
             {formData.visibility === 'public' && (
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  By *
-                </label>
+                <label htmlFor="location" className="block text-sm font-medium mb-2" style={labelStyle}>City</label>
                 <select
-                  name="location"
-                  id="location"
+                  name="location" id="location"
                   required={formData.visibility === 'public'}
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 >
-                  <option value="">Velg en by</option>
+                  <option value="">Select a city</option>
                   {NORWEGIAN_CITIES.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
-                <div className="text-xs text-gray-500 mt-1">
-                  Hjelper folk å finne arrangementer i sin by
-                </div>
+                <div className="text-xs mt-1" style={hintStyle}>Helps people find events in their city</div>
               </div>
             )}
 
-            {/* Event Title */}
+            {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Tittel på arrangement *
-              </label>
+              <label htmlFor="title" className="block text-sm font-medium mb-2" style={labelStyle}>Title</label>
               <input
-                type="text"
-                name="title"
-                id="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Hva skjer?"
+                type="text" name="title" id="title" required
+                value={formData.title} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle}
+                placeholder="What's happening?"
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {titleCharsLeft} tegn igjen
-              </div>
+              <div className="text-right text-xs mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
             </div>
 
-            {/* Event Image with Compression */}
+            {/* Image */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Arrangementsbilde *
-              </label>
-              
+              <label className="block text-sm font-medium mb-2" style={labelStyle}>Event image</label>
               <CompressedImageUploader
-                onUploadComplete={(url) => {
-                  setImageUrl(url)
-                  setError('') // Clear any previous errors
-                }}
-                onUploadError={(error) => {
-                  setError(error)
-                  setImageUrl('')
-                }}
+                onUploadComplete={(url) => { setImageUrl(url); setError('') }}
+                onUploadError={(error) => { setError(error); setImageUrl('') }}
                 className="w-full"
               />
             </div>
 
-            {/* Event Description */}
+            {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Beskrivelse *
-              </label>
+              <label htmlFor="description" className="block text-sm font-medium mb-2" style={labelStyle}>Description</label>
               <textarea
-                name="description"
-                id="description"
-                required
-                rows={5}
-                value={formData.description}
-                onChange={handleChange}
-                onPaste={handlePaste}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y break-words overflow-wrap-anywhere"
-                placeholder="Fortell folk mer om arrangementet ditt..."
+                name="description" id="description" required rows={5}
+                value={formData.description} onChange={handleChange} onPaste={handlePaste}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-y break-words overflow-wrap-anywhere"
+                style={inputStyle}
+                placeholder="Tell people more about your event..."
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {descriptionCharsLeft} tegn igjen
-              </div>
+              <div className="text-right text-xs mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
             </div>
 
-            {/* Start Date and Time */}
+            {/* Start Date/Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Startdato *
-                </label>
+                <label htmlFor="startDate" className="block text-sm font-medium mb-2" style={labelStyle}>Start date</label>
                 <input
-                  type="date"
-                  name="startDate"
-                  id="startDate"
-                  required
-                  value={formData.startDate}
-                  onChange={handleChange}
+                  type="date" name="startDate" id="startDate" required
+                  value={formData.startDate} onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-2">
-                  Starttid *
-                </label>
+                <label htmlFor="startTime" className="block text-sm font-medium mb-2" style={labelStyle}>Start time</label>
                 <input
-                  type="time"
-                  name="startTime"
-                  id="startTime"
-                  required
-                  value={formData.startTime}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="time" name="startTime" id="startTime" required
+                  value={formData.startTime} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
-            {/* End Date and Time */}
+            {/* End Date/Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Sluttdato *
-                </label>
+                <label htmlFor="endDate" className="block text-sm font-medium mb-2" style={labelStyle}>End date</label>
                 <input
-                  type="date"
-                  name="endDate"
-                  id="endDate"
-                  required
-                  value={formData.endDate}
-                  onChange={handleChange}
+                  type="date" name="endDate" id="endDate" required
+                  value={formData.endDate} onChange={handleChange}
                   min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
-                  Sluttid *
-                </label>
+                <label htmlFor="endTime" className="block text-sm font-medium mb-2" style={labelStyle}>End time</label>
                 <input
-                  type="time"
-                  name="endTime"
-                  id="endTime"
-                  required
-                  value={formData.endTime}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="time" name="endTime" id="endTime" required
+                  value={formData.endTime} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
-            {/* Address/Location - Required */}
+            {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Sted / Adresse *
-              </label>
+              <label htmlFor="address" className="block text-sm font-medium mb-2" style={labelStyle}>Venue / Address</label>
               <input
-                type="text"
-                name="address"
-                id="address"
-                required
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text" name="address" id="address" required
+                value={formData.address} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle}
                 placeholder="Rockefeller Music Hall, Torggata 16"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Spesifikk adresse, stedsnavn eller beskrivelse av hvor arrangementet holdes</span>
-                <span>{addressCharsLeft} tegn igjen</span>
+              <div className="flex justify-between text-xs mt-1" style={hintStyle}>
+                <span>Specific address or venue name</span>
+                <span>{addressCharsLeft} characters left</span>
               </div>
             </div>
 
-            {/* Location Link - Only show if address is filled */}
+            {/* Location Link */}
             {formData.address.trim() && (
               <div>
-                <label htmlFor="locationLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  Stedets lenke <span className="text-gray-400">(valgfri)</span>
+                <label htmlFor="locationLink" className="block text-sm font-medium mb-2" style={labelStyle}>
+                  Venue link <span style={hintStyle}>(optional)</span>
                 </label>
                 <input
-                  type="url"
-                  name="locationLink"
-                  id="locationLink"
-                  value={formData.locationLink}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://maps.google.com/... eller nettside"
+                  type="url" name="locationLink" id="locationLink"
+                  value={formData.locationLink} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
+                  placeholder="https://maps.google.com/..."
                 />
-                <div className="text-xs text-gray-500 mt-1">
-                  Google Maps-lenke, stedets nettside eller online møtelenke
-                </div>
+                <div className="text-xs mt-1" style={hintStyle}>Google Maps link or venue website</div>
               </div>
             )}
 
             {/* Ticket Link */}
             <div>
-              <label htmlFor="ticketLink" className="block text-sm font-medium text-gray-700 mb-2">
-                Billettlenke <span className="text-gray-400">(valgfri)</span>
+              <label htmlFor="ticketLink" className="block text-sm font-medium mb-2" style={labelStyle}>
+                Ticket link <span style={hintStyle}>(optional)</span>
               </label>
               <input
-                type="url"
-                name="ticketLink"
-                id="ticketLink"
-                value={formData.ticketLink}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://billetto.no/... eller billettside"
+                type="url" name="ticketLink" id="ticketLink"
+                value={formData.ticketLink} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle}
+                placeholder="https://billetto.no/..."
               />
-              <div className="text-xs text-gray-500 mt-1">
-                Lenke for å kjøpe billetter (Billetto, Facebook-arrangement, osv.)
-              </div>
+              <div className="text-xs mt-1" style={hintStyle}>Link to buy tickets</div>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting || !imageUrl}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
+              className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: 'var(--text-primary)',
+                color: 'var(--bg-primary)',
+              }}
             >
-              {isSubmitting ? 'Oppretter arrangement...' : 'Opprett arrangement'}
+              {isSubmitting ? 'Creating event...' : 'Create event'}
             </button>
           </form>
         </div>

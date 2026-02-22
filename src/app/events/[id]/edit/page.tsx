@@ -10,8 +10,8 @@ import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
 import CompressedImageUploader from '@/components/CompressedImageUploader'
 
 const VISIBILITY_OPTIONS = [
-  { value: 'public', label: 'Offentlig arrangement', description: 'Vises i arrangementslistene for alle' },
-  { value: 'private', label: 'Privat arrangement', description: 'Kun tilgjengelig via direktelenke' }
+  { value: 'public', label: 'Public event', description: 'Visible to everyone in event listings' },
+  { value: 'private', label: 'Private event', description: 'Only accessible via direct link' }
 ]
 
 interface Event {
@@ -37,7 +37,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const { id } = use(params)
   const { data: session, status } = useSession()
   const router = useRouter()
-  
+
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,7 +45,6 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [newImageUrl, setNewImageUrl] = useState<string>('')
   const [showImageUploader, setShowImageUploader] = useState(false)
 
-  // Form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -61,18 +60,16 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     visibility: 'public'
   })
 
-  // Character counters
   const titleCharsLeft = 80 - formData.title.length
   const descriptionCharsLeft = 800 - formData.description.length
   const addressCharsLeft = 200 - formData.address.length
 
-  // FIXED: Move useEffect before any conditional returns
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-    
+
     if (status === 'authenticated') {
       fetchEvent()
     }
@@ -83,20 +80,18 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       const response = await fetch(`/api/events/${id}`)
       if (response.ok) {
         const eventData = await response.json()
-        
-        // Check if user is the creator
+
         if (eventData.creator.id !== session?.user?.id) {
-          setError('Du kan kun redigere dine egne arrangementer')
+          setError('You can only edit your own events')
           setLoading(false)
           return
         }
-        
+
         setEvent(eventData)
-        
-        // Pre-populate form with existing data
+
         const startDate = new Date(eventData.startDate)
         const endDate = new Date(eventData.endDate)
-        
+
         setFormData({
           title: eventData.title,
           description: eventData.description,
@@ -104,21 +99,21 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           startTime: startDate.toTimeString().slice(0, 5),
           endDate: endDate.toISOString().split('T')[0],
           endTime: endDate.toTimeString().slice(0, 5),
-          location: eventData.location === 'Privat arrangement' ? '' : eventData.location,
+          location: eventData.location === 'Private event' ? '' : eventData.location,
           address: eventData.address,
           locationLink: eventData.locationLink || '',
           ticketLink: eventData.ticketLink || '',
           category: eventData.category || '',
           visibility: eventData.visibility
         })
-        
+
       } else if (response.status === 404) {
-        setError('Arrangementet ble ikke funnet')
+        setError('Event not found')
       } else {
-        setError('Kunne ikke laste arrangementet')
+        setError('Could not load event')
       }
     } catch (fetchError) {
-      setError('Noe gikk galt')
+      setError('Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -126,49 +121,24 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    
-    // Apply character limits but allow pasting (trim at limit instead of preventing)
+
     let finalValue = value
-    if (name === 'title' && value.length > 80) {
-      finalValue = value.slice(0, 80)
-    }
-    if (name === 'description' && value.length > 800) {
-      finalValue = value.slice(0, 800)
-    }
-    if (name === 'address' && value.length > 200) {
-      finalValue = value.slice(0, 200)
-    }
-    
-    // Clear category and location when switching to private
+    if (name === 'title' && value.length > 80) finalValue = value.slice(0, 80)
+    if (name === 'description' && value.length > 800) finalValue = value.slice(0, 800)
+    if (name === 'address' && value.length > 200) finalValue = value.slice(0, 200)
+
     if (name === 'visibility' && finalValue === 'private') {
-      setFormData({
-        ...formData,
-        [name]: finalValue,
-        category: '',
-        location: ''
-      })
+      setFormData({ ...formData, [name]: finalValue, category: '', location: '' })
     } else {
-      setFormData({
-        ...formData,
-        [name]: finalValue
-      })
+      setFormData({ ...formData, [name]: finalValue })
     }
   }
 
-  // Ensure paste functionality works
-  const handlePaste = () => {
-    // Allow default paste behavior
-    // The handleChange will automatically trim if too long
-  }
+  const handlePaste = () => {}
 
   const validateUrl = (url: string): boolean => {
-    if (!url) return true // Optional field
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
-    }
+    if (!url) return true
+    try { new URL(url); return true } catch { return false }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,59 +147,25 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     setError('')
 
     try {
-      if (!formData.address.trim()) {
-        setError('Sted / Adresse er påkrevd')
-        setIsSubmitting(false)
-        return
-      }
+      if (!formData.address.trim()) { setError('Venue / Address is required'); setIsSubmitting(false); return }
+      if (formData.visibility === 'public' && !formData.category) { setError('Category is required for public events'); setIsSubmitting(false); return }
+      if (formData.visibility === 'public' && !formData.location) { setError('City is required for public events'); setIsSubmitting(false); return }
+      if (formData.locationLink && !validateUrl(formData.locationLink)) { setError('Please enter a valid URL for venue link'); setIsSubmitting(false); return }
+      if (formData.ticketLink && !validateUrl(formData.ticketLink)) { setError('Please enter a valid URL for ticket link'); setIsSubmitting(false); return }
 
-      // Validate category only for public events
-      if (formData.visibility === 'public' && !formData.category) {
-        setError('Kategori er påkrevd for offentlige arrangementer')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate location only for public events
-      if (formData.visibility === 'public' && !formData.location) {
-        setError('By er påkrevd for offentlige arrangementer')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate URLs
-      if (formData.locationLink && !validateUrl(formData.locationLink)) {
-        setError('Vennligst skriv inn en gyldig URL for stedets lenke')
-        setIsSubmitting(false)
-        return
-      }
-
-      if (formData.ticketLink && !validateUrl(formData.ticketLink)) {
-        setError('Vennligst skriv inn en gyldig URL for billettlenke')
-        setIsSubmitting(false)
-        return
-      }
-
-      // Validate dates
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
       const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
 
-      if (startDateTime >= endDateTime) {
-        setError('Sluttidspunkt må være etter starttidspunkt')
-        setIsSubmitting(false)
-        return
-      }
+      if (startDateTime >= endDateTime) { setError('End time must be after start time'); setIsSubmitting(false); return }
 
-      // Use new compressed image URL if uploaded, otherwise keep existing
       const imageUrl = newImageUrl || event?.imageUrl
 
-      // Update event
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         startDate: startDateTime.toISOString(),
         endDate: endDateTime.toISOString(),
-        location: formData.visibility === 'public' ? formData.location.trim() : 'Privat arrangement',
+        location: formData.visibility === 'public' ? formData.location.trim() : 'Private event',
         address: formData.address.trim(),
         locationLink: formData.locationLink.trim() || null,
         ticketLink: formData.ticketLink.trim() || null,
@@ -240,9 +176,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
       const response = await fetch(`/api/events/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
       })
 
@@ -250,39 +184,40 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         router.push(`/events/${id}`)
       } else {
         const responseError = await response.json()
-        setError(responseError.message || 'Kunne ikke oppdatere arrangement')
+        setError(responseError.message || 'Could not update event')
       }
     } catch (submitError) {
-      setError('Noe gikk galt. Vennligst prøv igjen.')
+      setError('Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // FIXED: Conditional rendering after all hooks
+  const inputStyle = {
+    background: 'var(--bg-secondary)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+  }
+  const labelStyle = { color: 'var(--text-secondary)' }
+  const hintStyle = { color: 'var(--text-tertiary)' }
+
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Laster arrangement...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div style={{ color: 'var(--text-tertiary)' }}>Loading event...</div>
       </div>
     )
   }
 
-  if (status === 'unauthenticated') {
-    return null // Router.push is handled in useEffect
-  }
+  if (status === 'unauthenticated') return null
 
   if (error && !event) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
-          <Link 
-            href="/events" 
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            ← Tilbake til arrangementer
+          <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{error}</h2>
+          <Link href="/events" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Back to events
           </Link>
         </div>
       </div>
@@ -290,349 +225,261 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8" style={{ background: 'var(--bg-primary)' }}>
       <div className="max-w-2xl mx-auto px-4">
-        {/* Header */}
+        {/* Back link */}
         <div className="mb-6">
-          <Link 
-            href={`/events/${id}`}
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            ← Tilbake til arrangement
+          <Link href={`/events/${id}`} className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Back to event
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Rediger arrangement</h1>
-          
+        <div className="rounded-xl p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+          <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Edit event</h1>
+
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-              <p className="text-red-800">{error}</p>
+            <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <p className="text-sm" style={{ color: 'var(--destructive)' }}>{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Visibility Setting */}
+            {/* Visibility */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Synlighet *
-              </label>
+              <label className="block text-sm font-medium mb-3" style={labelStyle}>Visibility</label>
               <div className="space-y-3">
                 {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-start">
+                  <label key={option.value} className="flex items-start cursor-pointer">
                     <input
-                      type="radio"
-                      name="visibility"
-                      value={option.value}
+                      type="radio" name="visibility" value={option.value}
                       checked={formData.visibility === option.value}
-                      onChange={handleChange}
-                      className="mt-1 mr-3"
-                      required
+                      onChange={handleChange} className="mt-1 mr-3 accent-white" required
                     />
                     <div>
-                      <div className="font-medium text-gray-900">{option.label}</div>
-                      <div className="text-sm text-gray-600">{option.description}</div>
+                      <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
+                      <div className="text-xs" style={hintStyle}>{option.description}</div>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            {/* Category - Only show for public events */}
+            {/* Category - public only */}
             {formData.visibility === 'public' && (
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori *
-                </label>
+                <label htmlFor="category" className="block text-sm font-medium mb-2" style={labelStyle}>Category</label>
                 <select
-                  name="category"
-                  id="category"
+                  name="category" id="category"
                   required={formData.visibility === 'public'}
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.category} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 >
-                  <option value="">Velg en kategori</option>
+                  <option value="">Select a category</option>
                   {EVENT_CATEGORIES.map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
-                <div className="text-xs text-gray-500 mt-1">
-                  Hjelper folk å finne arrangementet ditt i kategorioversikten
-                </div>
               </div>
             )}
 
-            {/* Location/City - Only show for public events */}
+            {/* Location/City - public only */}
             {formData.visibility === 'public' && (
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  By *
-                </label>
+                <label htmlFor="location" className="block text-sm font-medium mb-2" style={labelStyle}>City</label>
                 <select
-                  name="location"
-                  id="location"
+                  name="location" id="location"
                   required={formData.visibility === 'public'}
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData.location} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 >
-                  <option value="">Velg en by</option>
+                  <option value="">Select a city</option>
                   {NORWEGIAN_CITIES.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
-                <div className="text-xs text-gray-500 mt-1">
-                  Hjelper folk å finne arrangementer i sin by
-                </div>
               </div>
             )}
 
-            {/* Event Title */}
+            {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Tittel på arrangement *
-              </label>
+              <label htmlFor="title" className="block text-sm font-medium mb-2" style={labelStyle}>Title</label>
               <input
-                type="text"
-                name="title"
-                id="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Hva skjer?"
+                type="text" name="title" id="title" required
+                value={formData.title} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle} placeholder="What's happening?"
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {titleCharsLeft} tegn igjen
-              </div>
+              <div className="text-right text-xs mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
             </div>
 
-            {/* Event Image with Compression */}
+            {/* Image */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Arrangementsbilde
-              </label>
-              
-              {/* Current Image Display */}
+              <label className="block text-sm font-medium mb-2" style={labelStyle}>Event image</label>
+
               {event && !showImageUploader && (
                 <div className="space-y-3">
-                  <div className="text-sm font-medium text-gray-700 mb-2">Nåværende bilde:</div>
-                  <div className="relative w-48 aspect-[4/5] rounded-md overflow-hidden border border-gray-200">
-                    <Image 
-                      src={event.imageUrl} 
-                      alt="Nåværende arrangementsbilde" 
-                      fill
-                      className="object-cover"
+                  <div className="text-xs font-medium mb-2" style={hintStyle}>Current image:</div>
+                  <div className="relative w-48 aspect-[4/5] rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                    <Image
+                      src={event.imageUrl}
+                      alt="Current event image"
+                      fill className="object-cover"
                       sizes="(max-width: 768px) 192px, 192px"
                     />
-                    {/* Compression indicator */}
-                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded opacity-90">
-                      🌱 Komprimert
-                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowImageUploader(true)}
-                    className="text-blue-600 hover:text-blue-700 text-sm underline"
+                    className="text-sm underline" style={{ color: 'var(--text-secondary)' }}
                   >
-                    Last opp nytt bilde
+                    Upload new image
                   </button>
-                  <p className="text-xs text-gray-500">
-                    La være å laste opp for å beholde nåværende bilde
+                  <p className="text-xs" style={hintStyle}>
+                    Don't upload to keep current image
                   </p>
                 </div>
               )}
-              
-              {/* New Image Uploader */}
+
               {showImageUploader && (
                 <div className="space-y-4">
                   <CompressedImageUploader
-                    onUploadComplete={(url) => {
-                      setNewImageUrl(url)
-                      setError('')
-                    }}
-                    onUploadError={(error) => {
-                      setError(error)
-                    }}
+                    onUploadComplete={(url) => { setNewImageUrl(url); setError('') }}
+                    onUploadError={(error) => { setError(error) }}
                     className="w-full"
                   />
-                  
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowImageUploader(false)
-                      setNewImageUrl('')
-                    }}
-                    className="text-gray-600 hover:text-gray-700 text-sm underline"
+                    onClick={() => { setShowImageUploader(false); setNewImageUrl('') }}
+                    className="text-sm underline" style={{ color: 'var(--text-tertiary)' }}
                   >
-                    Avbryt - behold nåværende bilde
+                    Cancel - keep current image
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Event Description */}
+            {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Beskrivelse *
-              </label>
+              <label htmlFor="description" className="block text-sm font-medium mb-2" style={labelStyle}>Description</label>
               <textarea
-                name="description"
-                id="description"
-                required
-                rows={5}
-                value={formData.description}
-                onChange={handleChange}
-                onPaste={handlePaste}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y break-words overflow-wrap-anywhere"
-                placeholder="Fortell folk mer om arrangementet ditt..."
+                name="description" id="description" required rows={5}
+                value={formData.description} onChange={handleChange} onPaste={handlePaste}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-y break-words overflow-wrap-anywhere"
+                style={inputStyle}
+                placeholder="Tell people more about your event..."
               />
-              <div className="text-right text-xs text-gray-500 mt-1">
-                {descriptionCharsLeft} tegn igjen
-              </div>
+              <div className="text-right text-xs mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
             </div>
 
-            {/* Start Date and Time */}
+            {/* Start Date/Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Startdato *
-                </label>
+                <label htmlFor="startDate" className="block text-sm font-medium mb-2" style={labelStyle}>Start date</label>
                 <input
-                  type="date"
-                  name="startDate"
-                  id="startDate"
-                  required
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="date" name="startDate" id="startDate" required
+                  value={formData.startDate} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-2">
-                  Starttid *
-                </label>
+                <label htmlFor="startTime" className="block text-sm font-medium mb-2" style={labelStyle}>Start time</label>
                 <input
-                  type="time"
-                  name="startTime"
-                  id="startTime"
-                  required
-                  value={formData.startTime}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="time" name="startTime" id="startTime" required
+                  value={formData.startTime} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
-            {/* End Date and Time */}
+            {/* End Date/Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Sluttdato *
-                </label>
+                <label htmlFor="endDate" className="block text-sm font-medium mb-2" style={labelStyle}>End date</label>
                 <input
-                  type="date"
-                  name="endDate"
-                  id="endDate"
-                  required
-                  value={formData.endDate}
-                  onChange={handleChange}
+                  type="date" name="endDate" id="endDate" required
+                  value={formData.endDate} onChange={handleChange}
                   min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
-                  Sluttid *
-                </label>
+                <label htmlFor="endTime" className="block text-sm font-medium mb-2" style={labelStyle}>End time</label>
                 <input
-                  type="time"
-                  name="endTime"
-                  id="endTime"
-                  required
-                  value={formData.endTime}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  type="time" name="endTime" id="endTime" required
+                  value={formData.endTime} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
-            {/* Address/Location - Required */}
+            {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Sted / Adresse *
-              </label>
+              <label htmlFor="address" className="block text-sm font-medium mb-2" style={labelStyle}>Venue / Address</label>
               <input
-                type="text"
-                name="address"
-                id="address"
-                required
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text" name="address" id="address" required
+                value={formData.address} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle}
                 placeholder="Rockefeller Music Hall, Torggata 16"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Spesifikk adresse, stedsnavn eller beskrivelse av hvor arrangementet holdes</span>
-                <span>{addressCharsLeft} tegn igjen</span>
+              <div className="flex justify-between text-xs mt-1" style={hintStyle}>
+                <span>Specific address or venue name</span>
+                <span>{addressCharsLeft} characters left</span>
               </div>
             </div>
 
-            {/* Location Link - Only show if address is filled */}
+            {/* Location Link */}
             {formData.address.trim() && (
               <div>
-                <label htmlFor="locationLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  Stedets lenke <span className="text-gray-400">(valgfri)</span>
+                <label htmlFor="locationLink" className="block text-sm font-medium mb-2" style={labelStyle}>
+                  Venue link <span style={hintStyle}>(optional)</span>
                 </label>
                 <input
-                  type="url"
-                  name="locationLink"
-                  id="locationLink"
-                  value={formData.locationLink}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://maps.google.com/... eller nettside"
+                  type="url" name="locationLink" id="locationLink"
+                  value={formData.locationLink} onChange={handleChange}
+                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  style={inputStyle}
+                  placeholder="https://maps.google.com/..."
                 />
-                <div className="text-xs text-gray-500 mt-1">
-                  Google Maps-lenke, stedets nettside eller online møtelenke
-                </div>
               </div>
             )}
 
             {/* Ticket Link */}
             <div>
-              <label htmlFor="ticketLink" className="block text-sm font-medium text-gray-700 mb-2">
-                Billettlenke <span className="text-gray-400">(valgfri)</span>
+              <label htmlFor="ticketLink" className="block text-sm font-medium mb-2" style={labelStyle}>
+                Ticket link <span style={hintStyle}>(optional)</span>
               </label>
               <input
-                type="url"
-                name="ticketLink"
-                id="ticketLink"
-                value={formData.ticketLink}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://billetto.no/... eller billettside"
+                type="url" name="ticketLink" id="ticketLink"
+                value={formData.ticketLink} onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={inputStyle}
+                placeholder="https://billetto.no/..."
               />
-              <div className="text-xs text-gray-500 mt-1">
-                Lenke for å kjøpe billetter (Billetto, Facebook-arrangement, osv.)
-              </div>
             </div>
 
-            {/* Submit Buttons */}
+            {/* Submit */}
             <div className="flex gap-4">
               <Link
                 href={`/events/${id}`}
-                className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-md hover:bg-gray-400 font-medium text-lg text-center"
+                className="flex-1 py-3 px-4 rounded-lg font-medium text-sm text-center transition-colors"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
-                Avbryt
+                Cancel
               </Link>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
+                className="flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
               >
-                {isSubmitting ? 'Lagrer endringer...' : 'Lagre endringer'}
+                {isSubmitting ? 'Saving changes...' : 'Save changes'}
               </button>
             </div>
           </form>

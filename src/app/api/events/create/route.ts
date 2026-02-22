@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     if (visibility === 'public') {
       if (!category) {
         return NextResponse.json(
-          { message: 'Kategori er påkrevd for offentlige arrangementer' },
+          { message: 'Category is required for public events' },
           { status: 400 }
         )
       }
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     if (visibility === 'public') {
       if (!location) {
         return NextResponse.json(
-          { message: 'By er påkrevd for offentlige arrangementer' },
+          { message: 'City is required for public events' },
           { status: 400 }
         )
       }
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
 
     if (start <= new Date()) {
       return NextResponse.json(
-        { message: 'Arrangementet kan ikke planlegges i fortiden' },
+        { message: 'Event cannot be scheduled in the past' },
         { status: 400 }
       )
     }
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
         imageUrl: imageUrl.trim(),
         startDate: start,
         endDate: end,
-        location: location ? location.trim() : 'Privat arrangement',
+        location: location ? location.trim() : 'Private event',
         address: address.trim(), // Required field now
         locationLink: locationLink?.trim() || null,
         ticketLink: ticketLink?.trim() || null,

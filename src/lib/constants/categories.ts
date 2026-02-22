@@ -1,65 +1,64 @@
 // src/lib/constants/categories.ts
 
 export const EVENT_CATEGORIES = [
-  'Konsert',
-  'Fest',
-  'Konferanse', 
-  'Møte',
+  'Music',
+  'Nightlife',
+  'Conference',
+  'Networking',
   'Workshop',
   'Festival',
-  'Sport',
-  'Mat & Drikke',
-  'Kunst & Kultur',
-  'Annet'
+  'Sports',
+  'Food & Drink',
+  'Arts & Culture',
+  'Other'
 ] as const
 
 export type EventCategory = typeof EVENT_CATEGORIES[number]
 
-// Helper function to validate category
 export const isValidCategory = (category: string): category is EventCategory => {
   return EVENT_CATEGORIES.includes(category as EventCategory)
 }
 
-// Category metadata for display and filtering
-export const CATEGORY_METADATA = {
-  'Konsert': {
-    emoji: '🎵',
-    description: 'Musikkarrangementer og konserter'
+// Category metadata with icon keys for filter UI
+export const CATEGORY_METADATA: Record<string, { icon: string; description: string }> = {
+  'Music': {
+    icon: 'music',
+    description: 'Concerts, gigs, and live music'
   },
-  'Fest': {
-    emoji: '🎉',
-    description: 'Fester og sosiale sammenkomster'
+  'Nightlife': {
+    icon: 'nightlife',
+    description: 'Parties and social gatherings'
   },
-  'Konferanse': {
-    emoji: '📊',
-    description: 'Profesjonelle og akademiske konferanser'
+  'Conference': {
+    icon: 'conference',
+    description: 'Professional and academic conferences'
   },
-  'Møte': {
-    emoji: '💼',
-    description: 'Forretnings- og nettverksmøter'
+  'Networking': {
+    icon: 'networking',
+    description: 'Business and networking meetups'
   },
   'Workshop': {
-    emoji: '🛠️',
-    description: 'Læringsworkshops og kurs'
+    icon: 'workshop',
+    description: 'Learning workshops and courses'
   },
   'Festival': {
-    emoji: '🎪',
-    description: 'Festivaler og større kulturarrangementer'
+    icon: 'festival',
+    description: 'Festivals and large cultural events'
   },
-  'Sport': {
-    emoji: '⚽',
-    description: 'Sportsarrangementer og treningsøkter'
+  'Sports': {
+    icon: 'sports',
+    description: 'Sports events and fitness sessions'
   },
-  'Mat & Drikke': {
-    emoji: '🍽️',
-    description: 'Matarrangementer og drikkesammenkomster'
+  'Food & Drink': {
+    icon: 'food',
+    description: 'Food events and drink gatherings'
   },
-  'Kunst & Kultur': {
-    emoji: '🎨',
-    description: 'Kunstutstillinger og kulturelle arrangementer'
+  'Arts & Culture': {
+    icon: 'arts',
+    description: 'Art exhibitions and cultural events'
   },
-  'Annet': {
-    emoji: '📋',
-    description: 'Andre typer arrangementer'
+  'Other': {
+    icon: 'other',
+    description: 'Other types of events'
   }
 } as const

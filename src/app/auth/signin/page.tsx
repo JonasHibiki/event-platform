@@ -5,7 +5,6 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-// Separate component that uses useSearchParams
 function SigninForm() {
   const [formData, setFormData] = useState({
     email: '',
@@ -15,7 +14,7 @@ function SigninForm() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   const successMessage = searchParams.get('message')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +30,7 @@ function SigninForm() {
       })
 
       if (result?.error) {
-        setError('Ugyldig e-post eller passord')
+        setError('Invalid email or password')
         return
       }
 
@@ -40,7 +39,7 @@ function SigninForm() {
         router.refresh()
       }
     } catch (_error) {
-      setError('Noe gikk galt. Vennligst prøv igjen.')
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -54,34 +53,34 @@ function SigninForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ background: 'var(--bg-primary)' }}>
+      <div className="max-w-sm w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Logg inn på kontoen din
+          <h2 className="text-center text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Sign in
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Velkommen tilbake til EventsPlatform
+          <p className="mt-2 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Welcome back to vibber
           </p>
         </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           {successMessage && (
-            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm">
+            <div className="px-4 py-3 rounded-md text-sm" style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', color: 'var(--success)' }}>
               {successMessage}
             </div>
           )}
-          
+
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+            <div className="px-4 py-3 rounded-md text-sm" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--destructive)' }}>
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                E-postadresse
+              <label htmlFor="email" className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                Email address
               </label>
               <input
                 id="email"
@@ -90,14 +89,19 @@ function SigninForm() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Skriv inn din e-post"
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
+                placeholder="din@epost.no"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Passord
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                Password
               </label>
               <input
                 id="password"
@@ -106,7 +110,12 @@ function SigninForm() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
                 placeholder="Skriv inn ditt passord"
               />
             </div>
@@ -116,17 +125,21 @@ function SigninForm() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2.5 px-4 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: 'var(--text-primary)',
+                color: 'var(--bg-primary)',
+              }}
             >
-              {loading ? 'Logger inn...' : 'Logg inn'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 
           <div className="text-center">
-            <span className="text-sm text-gray-600">
-              Har du ikke en konto?{' '}
-              <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                Registrer deg
+            <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              Don't have an account?{' '}
+              <Link href="/auth/signup" className="font-medium transition-colors" style={{ color: 'var(--text-secondary)' }}>
+                Sign up
               </Link>
             </span>
           </div>
@@ -136,19 +149,17 @@ function SigninForm() {
   )
 }
 
-// Loading fallback component
 function SigninLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Laster inn...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto" style={{ borderColor: 'var(--text-secondary)' }}></div>
+        <p className="mt-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>Loading...</p>
       </div>
     </div>
   )
 }
 
-// Main component with Suspense boundary
 export default function SigninPage() {
   return (
     <Suspense fallback={<SigninLoading />}>

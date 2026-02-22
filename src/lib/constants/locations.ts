@@ -3,18 +3,17 @@
 export const NORWEGIAN_CITIES = [
   'Oslo',
   'Bergen',
-  'Trondheim', 
+  'Trondheim',
   'Stavanger',
   'Kristiansand',
-  'Tromsø',
+  'Tromso',
   'Drammen',
   'Fredrikstad',
-  'Annet'
+  'Other'
 ] as const
 
 export type NorwegianCity = typeof NORWEGIAN_CITIES[number]
 
-// Helper function to validate location
 export const isValidLocation = (location: string): location is NorwegianCity => {
   return NORWEGIAN_CITIES.includes(location as NorwegianCity)
 }

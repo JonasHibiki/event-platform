@@ -49,13 +49,22 @@ function formatTime(dateString: string): string {
   }).format(date)
 }
 
-// Delete Confirmation Modal
-function DeleteConfirmModal({ 
-  event, 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  isDeleting 
+/* SVG Icons */
+function CalendarIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+}
+function ClockIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+}
+function PinIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+}
+function UsersIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+}
+
+function DeleteConfirmModal({
+  event, isOpen, onClose, onConfirm, isDeleting
 }: {
   event: Event | null
   isOpen: boolean
@@ -66,39 +75,41 @@ function DeleteConfirmModal({
   if (!isOpen || !event) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Slett arrangement?
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="rounded-xl p-6 max-w-md w-full" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+          Delete event?
         </h3>
-        
-        <p className="text-gray-600 mb-4">
-          Er du sikker på at du vil slette arrangementet <strong>&quot;{event.title}&quot;</strong>?
+
+        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>&quot;{event.title}&quot;</strong>?
           {event._count.rsvps > 0 && (
-            <span className="text-red-600 block mt-2">
-              ⚠️ {event._count.rsvps} personer har meldt seg på dette arrangementet.
+            <span className="block mt-2" style={{ color: 'var(--destructive)' }}>
+              {event._count.rsvps} people have RSVP'd to this event.
             </span>
           )}
         </p>
-        
-        <p className="text-sm text-gray-500 mb-6">
-          Denne handlingen kan ikke angres.
+
+        <p className="text-xs mb-6" style={{ color: 'var(--text-tertiary)' }}>
+          This action cannot be undone.
         </p>
-        
+
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+            className="px-4 py-2 text-sm rounded-lg transition-colors disabled:opacity-50"
+            style={{ color: 'var(--text-secondary)' }}
           >
-            Avbryt
+            Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'var(--destructive)', color: '#fff' }}
           >
-            {isDeleting ? 'Sletter...' : 'Slett arrangement'}
+            {isDeleting ? 'Deleting...' : 'Delete event'}
           </button>
         </div>
       </div>
@@ -106,107 +117,102 @@ function DeleteConfirmModal({
   )
 }
 
-function EventCard({ 
-  event, 
-  showManagement = false,
-  onDelete 
-}: { 
+function EventCard({
+  event, showManagement = false, onDelete
+}: {
   event: Event
   showManagement?: boolean
   onDelete?: (event: Event) => void
 }) {
   const isUpcoming = new Date(event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
-  
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Event Image */}
+    <div className="rounded-xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
       <Link href={`/events/${event.id}`}>
-        <div className="w-full h-32 relative bg-gray-200 hover:opacity-95 transition-opacity">
+        <div className="w-full h-32 relative" style={{ background: 'var(--bg-tertiary)' }}>
           <Image
             src={event.imageUrl}
             alt={event.title}
             fill
-            className="object-cover"
+            className="object-cover hover:opacity-90 transition-opacity"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          {/* Event Status Badges */}
           <div className="absolute top-2 left-2 flex gap-1">
             {event.category && (
-              <span className="inline-block bg-white/90 backdrop-blur text-gray-900 text-xs font-medium px-2 py-1 rounded">
+              <span className="text-xs font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
                 {event.category}
               </span>
             )}
             {isPrivate && (
-              <span className="inline-block bg-amber-500/90 backdrop-blur text-white text-xs font-medium px-2 py-1 rounded">
-                🔒 PRIVAT
+              <span className="text-xs font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+                Private
               </span>
             )}
           </div>
           {!isUpcoming && (
             <div className="absolute top-2 right-2">
-              <span className="inline-block bg-black/70 text-white text-xs font-medium px-2 py-1 rounded">
-                AVSLUTTET
+              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
+                ENDED
               </span>
             </div>
           )}
         </div>
       </Link>
-      
-      {/* Event Content */}
+
       <div className="p-4">
         <Link href={`/events/${event.id}`}>
-          <h3 className="font-semibold text-base text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+          <h3 className="font-medium text-sm mb-2 line-clamp-2 hover:opacity-80 transition-opacity" style={{ color: 'var(--text-primary)' }}>
             {event.title}
           </h3>
         </Link>
-        
-        {/* Event Details */}
-        <div className="space-y-1 text-xs text-gray-500 mb-3">
-          <div className="flex items-center">
-            <span className="mr-1">📅</span>
+
+        <div className="space-y-1.5 text-xs mb-3" style={{ color: 'var(--text-tertiary)' }}>
+          <div className="flex items-center gap-1.5">
+            <CalendarIcon />
             {formatDate(event.startDate)}
           </div>
-          <div className="flex items-center">
-            <span className="mr-1">🕐</span>
+          <div className="flex items-center gap-1.5">
+            <ClockIcon />
             {formatTime(event.startDate)} - {formatTime(event.endDate)}
           </div>
-          <div className="flex items-center">
-            <span className="mr-1">📍</span>
+          <div className="flex items-center gap-1.5">
+            <PinIcon />
             <span className="line-clamp-1">{event.address}</span>
           </div>
-          <div className="flex items-center">
-            <span className="mr-1">👥</span>
-            {event._count.rsvps} deltar
+          <div className="flex items-center gap-1.5">
+            <UsersIcon />
+            {event._count.rsvps} going
           </div>
         </div>
-        
-        {/* Management Buttons for Created Events */}
+
         {showManagement && (
-          <div className="flex gap-2 pt-3 border-t border-gray-100">
+          <div className="flex gap-2 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <Link
               href={`/events/${event.id}/edit`}
-              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-center text-sm font-medium hover:bg-blue-700 transition-colors"
+              className="flex-1 py-2 rounded-lg text-center text-xs font-medium transition-colors"
+              style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
             >
-              ✏️ Rediger
+              Edit
             </Link>
             <button
               onClick={() => onDelete?.(event)}
-              className="flex-1 bg-red-600 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-700 transition-colors"
+              className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+              style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--destructive)' }}
             >
-              🗑️ Slett
+              Delete
             </button>
           </div>
         )}
 
-        {/* Link to Event for Attending Events */}
         {!showManagement && (
-          <div className="pt-3 border-t border-gray-100">
+          <div className="pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <Link
               href={`/events/${event.id}`}
-              className="block w-full bg-gray-100 text-gray-700 px-3 py-2 rounded text-center text-sm font-medium hover:bg-gray-200 transition-colors"
+              className="block w-full py-2 rounded-lg text-center text-xs font-medium transition-colors"
+              style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
             >
-              Se arrangement →
+              View event
             </Link>
           </div>
         )}
@@ -227,13 +233,12 @@ export default function MyEventsPage() {
     isDeleting: false
   })
 
-  // FIXED: Move useEffect before any conditional returns
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
-    
+
     if (status === 'authenticated') {
       fetchMyEvents()
     }
@@ -246,86 +251,63 @@ export default function MyEventsPage() {
         const eventsData = await response.json()
         setData(eventsData)
       } else {
-        setError('Kunne ikke laste dine arrangementer')
+        setError('Could not load your events')
       }
     } catch (fetchError) {
-      setError('Noe gikk galt')
+      setError('Something went wrong')
     } finally {
       setLoading(false)
     }
   }
 
   const handleDeleteClick = (event: Event) => {
-    setDeleteModal({
-      isOpen: true,
-      event: event,
-      isDeleting: false
-    })
+    setDeleteModal({ isOpen: true, event: event, isDeleting: false })
   }
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.event) return
-
     setDeleteModal(prev => ({ ...prev, isDeleting: true }))
 
     try {
-      const response = await fetch(`/api/events/${deleteModal.event.id}`, {
-        method: 'DELETE'
-      })
-
+      const response = await fetch(`/api/events/${deleteModal.event.id}`, { method: 'DELETE' })
       if (response.ok) {
-        // Refresh the events list
         await fetchMyEvents()
-        
-        // Close modal
-        setDeleteModal({
-          isOpen: false,
-          event: null,
-          isDeleting: false
-        })
+        setDeleteModal({ isOpen: false, event: null, isDeleting: false })
       } else {
         const errorData = await response.json()
-        setError(errorData.message || 'Kunne ikke slette arrangementet')
+        setError(errorData.message || 'Could not delete event')
         setDeleteModal(prev => ({ ...prev, isDeleting: false }))
       }
     } catch (deleteError) {
-      setError('Noe gikk galt ved sletting av arrangementet')
+      setError('Something went wrong while deleting the event')
       setDeleteModal(prev => ({ ...prev, isDeleting: false }))
     }
   }
 
   const handleDeleteCancel = () => {
-    setDeleteModal({
-      isOpen: false,
-      event: null,
-      isDeleting: false
-    })
+    setDeleteModal({ isOpen: false, event: null, isDeleting: false })
   }
 
-  // FIXED: All conditional rendering after hooks
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Laster dine arrangementer...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div style={{ color: 'var(--text-tertiary)' }}>Loading your events...</div>
       </div>
     )
   }
 
-  if (status === 'unauthenticated') {
-    return null // Router.push is handled in useEffect
-  }
+  if (status === 'unauthenticated') return null
 
   if (error && !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+          <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{error}</h2>
           <button
             onClick={() => window.location.reload()}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}
           >
-            Prøv igjen
+            Try again
           </button>
         </div>
       </div>
@@ -334,122 +316,103 @@ export default function MyEventsPage() {
 
   if (!data) return null
 
-  // Separate upcoming and past events
   const upcomingCreated = data.createdEvents.filter(event => new Date(event.startDate) > new Date())
   const pastCreated = data.createdEvents.filter(event => new Date(event.startDate) <= new Date())
   const upcomingAttending = data.attendingEvents.filter(event => new Date(event.startDate) > new Date())
   const pastAttending = data.attendingEvents.filter(event => new Date(event.startDate) <= new Date())
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Page Header */}
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mine arrangementer</h1>
-          <p className="text-gray-600">Oversikt over dine arrangementer og påmeldinger</p>
+          <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>My events</h1>
+          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Overview of your events and RSVPs</p>
         </div>
 
-        {/* Error Message */}
+        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-            <p className="text-red-800">{error}</p>
+          <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <p className="text-sm" style={{ color: 'var(--destructive)' }}>{error}</p>
           </div>
         )}
-        
-        {/* Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{data.createdEvents.length}</div>
-            <div className="text-sm text-gray-600">Opprettet</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{data.attendingEvents.length}</div>
-            <div className="text-sm text-gray-600">Påmeldt</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{upcomingCreated.length + upcomingAttending.length}</div>
-            <div className="text-sm text-gray-600">Kommende</div>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-gray-600">{pastCreated.length + pastAttending.length}</div>
-            <div className="text-sm text-gray-600">Tidligere</div>
-          </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          {[
+            { label: 'Created', value: data.createdEvents.length },
+            { label: 'Attending', value: data.attendingEvents.length },
+            { label: 'Upcoming', value: upcomingCreated.length + upcomingAttending.length },
+            { label: 'Past', value: pastCreated.length + pastAttending.length },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl p-4 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{stat.value}</div>
+              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{stat.label}</div>
+            </div>
+          ))}
         </div>
 
-        {/* My Created Events */}
+        {/* Created Events */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Arrangementer du har opprettet ({data.createdEvents.length})
+            <h2 className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+              Your events ({data.createdEvents.length})
             </h2>
             <Link
               href="/create"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium text-sm"
+              className="px-4 py-2 rounded-lg font-medium text-xs transition-colors"
+              style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
             >
-              + Opprett nytt
+              + Create new
             </Link>
           </div>
 
-          {/* Upcoming Created Events */}
           {upcomingCreated.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Kommende arrangementer</h3>
+              <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>Upcoming</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcomingCreated.map(event => (
-                  <EventCard 
-                    key={event.id} 
-                    event={event} 
-                    showManagement={true}
-                    onDelete={handleDeleteClick}
-                  />
+                  <EventCard key={event.id} event={event} showManagement={true} onDelete={handleDeleteClick} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Past Created Events */}
           {pastCreated.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Tidligere arrangementer</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75">
+              <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>Past</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">
                 {pastCreated.map(event => (
-                  <EventCard 
-                    key={event.id} 
-                    event={event} 
-                    showManagement={true}
-                    onDelete={handleDeleteClick}
-                  />
+                  <EventCard key={event.id} event={event} showManagement={true} onDelete={handleDeleteClick} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Empty State for Created Events */}
           {data.createdEvents.length === 0 && (
-            <div className="bg-white rounded-lg p-8 text-center">
-              <div className="text-4xl mb-4">🎪</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Du har ikke opprettet noen arrangementer enda</h3>
-              <p className="text-gray-600 mb-4">Opprett ditt første arrangement og få folk til å samles!</p>
+            <div className="rounded-xl p-8 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
+              <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No events yet</h3>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Create your first event and bring people together</p>
               <Link
                 href="/create"
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium"
+                className="inline-block px-6 py-2 rounded-lg font-medium text-sm"
+                style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
               >
-                Opprett ditt første arrangement
+                Create event
               </Link>
             </div>
           )}
         </div>
 
-        {/* Events I'm Attending */}
+        {/* Attending Events */}
         <div className="mb-12">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            Arrangementer du deltar på ({data.attendingEvents.length})
+          <h2 className="text-lg font-medium mb-6" style={{ color: 'var(--text-primary)' }}>
+            Attending ({data.attendingEvents.length})
           </h2>
 
-          {/* Upcoming Attending Events */}
           {upcomingAttending.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Kommende arrangementer</h3>
+              <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>Upcoming</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcomingAttending.map(event => (
                   <EventCard key={event.id} event={event} />
@@ -458,11 +421,10 @@ export default function MyEventsPage() {
             </div>
           )}
 
-          {/* Past Attending Events */}
           {pastAttending.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Tidigare arrangementer</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75">
+              <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>Past</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">
                 {pastAttending.map(event => (
                   <EventCard key={event.id} event={event} />
                 ))}
@@ -470,43 +432,22 @@ export default function MyEventsPage() {
             </div>
           )}
 
-          {/* Empty State for Attending Events */}
           {data.attendingEvents.length === 0 && (
-            <div className="bg-white rounded-lg p-8 text-center">
-              <div className="text-4xl mb-4">🎫</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Du har ikke meldt deg på noen arrangementer enda</h3>
-              <p className="text-gray-600 mb-4">Utforsk arrangementer og finn noe gøy å gjøre!</p>
+            <div className="rounded-xl p-8 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
+              <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No RSVPs yet</h3>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Explore events and find something great</p>
               <Link
                 href="/events"
-                className="inline-block bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 font-medium"
+                className="inline-block px-6 py-2 rounded-lg font-medium text-sm"
+                style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
-                Utforsk arrangementer
+                Explore events
               </Link>
             </div>
           )}
         </div>
-
-        {/* Quick Action Buttons */}
-        <div className="bg-white rounded-lg p-6 text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Kom i gang</h3>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/create"
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium"
-            >
-              + Opprett arrangement
-            </Link>
-            <Link
-              href="/events"
-              className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 font-medium"
-            >
-              Utforsk arrangementer
-            </Link>
-          </div>
-        </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         event={deleteModal.event}
         isOpen={deleteModal.isOpen}
