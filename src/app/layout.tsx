@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | vibber",
   },
   description: "Discover and create events",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://vibber.no"),
+  metadataBase: new URL("https://vibberr.vercel.app"),
   openGraph: {
     type: "website",
     siteName: "vibber",

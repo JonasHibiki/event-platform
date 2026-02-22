@@ -45,9 +45,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locationText = isPrivate ? event.address : `${event.address}, ${event.location}`
   const description = `${date} at ${time} — ${locationText}`
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vibber.no'
-  const ogImageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(event.title)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&location=${encodeURIComponent(locationText)}&image=${encodeURIComponent(event.imageUrl)}`
-
   return {
     title: event.title,
     description,
@@ -57,9 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       images: [
         {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
+          url: event.imageUrl,
           alt: event.title,
         },
       ],
@@ -68,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: event.title,
       description,
-      images: [ogImageUrl],
+      images: [event.imageUrl],
     },
   }
 }
