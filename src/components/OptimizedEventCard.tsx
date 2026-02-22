@@ -62,7 +62,7 @@ export default function OptimizedEventCard({ event }: OptimizedEventCardProps) {
 
           {isPastEvent && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-xs font-medium px-3 py-1 rounded-full" style={{ background: 'var(--bg-elevated)' }}>
+              <span className="text-white text-sm font-medium px-3 py-1 rounded-full" style={{ background: 'var(--bg-elevated)' }}>
                 ENDED
               </span>
             </div>
@@ -71,15 +71,15 @@ export default function OptimizedEventCard({ event }: OptimizedEventCardProps) {
 
         {/* Details */}
         <div className="p-4 space-y-2.5">
-          <h3 className="font-medium text-sm leading-tight line-clamp-2" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="font-medium text-base leading-tight line-clamp-2" style={{ color: 'var(--text-primary)' }}>
             {event.title}
           </h3>
 
-          <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
             {formatDate(event.startDate)}
           </p>
 
-          <p className="text-xs line-clamp-1" style={{ color: 'var(--text-tertiary)' }}>
+          <p className="text-sm line-clamp-1" style={{ color: 'var(--text-tertiary)' }}>
             {event.address}
           </p>
 
@@ -87,7 +87,7 @@ export default function OptimizedEventCard({ event }: OptimizedEventCardProps) {
           <div className="flex flex-wrap gap-1.5">
             {event.category && (
               <span
-                className="text-xs px-2 py-0.5 rounded-full"
+                className="text-sm px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
                 {event.category}
@@ -95,7 +95,7 @@ export default function OptimizedEventCard({ event }: OptimizedEventCardProps) {
             )}
             {event.location !== 'Private event' && event.location && (
               <span
-                className="text-xs px-2 py-0.5 rounded-full"
+                className="text-sm px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
                 {event.location}
@@ -103,7 +103,7 @@ export default function OptimizedEventCard({ event }: OptimizedEventCardProps) {
             )}
             {event.visibility === 'private' && (
               <span
-                className="text-xs px-2 py-0.5 rounded-full"
+                className="text-sm px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
                 Private

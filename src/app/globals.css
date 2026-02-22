@@ -52,10 +52,168 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* UploadThing dropzone overrides */
+.ut-uploading .ut-label,
+.ut-uploading .ut-allowed-content {
+  display: none;
+}
+
+[data-ut-element="button"] {
+  cursor: pointer;
+}
+
 /* Dark form inputs */
 input[type="date"],
 input[type="time"] {
   color-scheme: dark;
+}
+
+/* ============================================================
+   React Day Picker — dark theme
+
+   Strategy: Override CSS variables that the library reads
+   natively, then only add class overrides where the library
+   doesn't use variables (text color, chevron fill, focus).
+   ============================================================ */
+
+.rdp-root {
+  /* Accent: white on dark */
+  --rdp-accent-color: #f5f5f5;
+  --rdp-accent-background-color: rgba(245, 245, 245, 0.15);
+
+  /* Cells */
+  --rdp-day-height: 40px;
+  --rdp-day-width: 40px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-width: 38px;
+  --rdp-day_button-border-radius: 10px;
+  --rdp-day_button-border: 2px solid transparent;
+
+  /* Selected border — keep transparent, the bg fill is enough */
+  --rdp-selected-border: 2px solid transparent;
+
+  /* Range endpoints: white bg, dark text */
+  --rdp-range_start-color: #0a0a0a;
+  --rdp-range_start-date-background-color: #f5f5f5;
+  --rdp-range_end-color: #0a0a0a;
+  --rdp-range_end-date-background-color: #f5f5f5;
+
+  /* Range middle: visible tinted band with white text */
+  --rdp-range_middle-background-color: rgba(245, 245, 245, 0.1);
+  --rdp-range_middle-color: #f5f5f5;
+
+  /* Today */
+  --rdp-today-color: #f5f5f5;
+
+  /* Disabled & outside */
+  --rdp-disabled-opacity: 0.3;
+  --rdp-outside-opacity: 0.4;
+
+  /* Nav arrows */
+  --rdp-nav_button-disabled-opacity: 0.3;
+
+  /* Base text */
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+/* ---- Text colors the library doesn't handle via variables ---- */
+
+.rdp-root .rdp-caption_label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+.rdp-root .rdp-month_caption {
+  color: #f5f5f5;
+}
+
+.rdp-root .rdp-weekday {
+  color: #666;
+  font-size: 14px;
+}
+
+.rdp-root .rdp-day_button {
+  color: #c0c0c0;
+  font-size: 14px;
+}
+
+/* Range start/end: black text on white background */
+.rdp-root .rdp-range_start .rdp-day_button,
+.rdp-root .rdp-range_end .rdp-day_button,
+.rdp-root .rdp-selected:not(.rdp-range_middle):not(.rdp-range_start):not(.rdp-range_end) .rdp-day_button {
+  color: #0a0a0a;
+}
+
+/* Range middle: white text */
+.rdp-root .rdp-range_middle .rdp-day_button {
+  color: #f5f5f5;
+}
+
+/* Hover on unselected days */
+.rdp-root .rdp-day:not(.rdp-selected):not(.rdp-range_middle) .rdp-day_button:hover {
+  background-color: rgba(245, 245, 245, 0.1);
+}
+
+/* Disabled */
+.rdp-root .rdp-disabled .rdp-day_button {
+  color: #444;
+  cursor: not-allowed;
+}
+
+/* Outside month */
+.rdp-root .rdp-outside .rdp-day_button {
+  color: #555;
+}
+
+/* Today (unselected) */
+.rdp-root .rdp-today:not(.rdp-outside):not(.rdp-range_start):not(.rdp-range_end) .rdp-day_button {
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+/* ---- Chevron: uses fill not color ---- */
+.rdp-root .rdp-chevron {
+  fill: #a0a0a0;
+}
+
+.rdp-root .rdp-button_previous:hover .rdp-chevron,
+.rdp-root .rdp-button_next:hover .rdp-chevron {
+  fill: #f5f5f5;
+}
+
+/* ---- Nav buttons ---- */
+.rdp-root .rdp-button_previous,
+.rdp-root .rdp-button_next {
+  border-radius: 8px;
+}
+
+.rdp-root .rdp-button_previous:hover,
+.rdp-root .rdp-button_next:hover {
+  background-color: rgba(245, 245, 245, 0.1);
+}
+
+/* ---- Focus-visible (keyboard nav) ---- */
+.rdp-root .rdp-day_button:focus-visible {
+  outline: 2px solid #f5f5f5;
+  outline-offset: 2px;
+}
+
+.rdp-root .rdp-button_previous:focus-visible,
+.rdp-root .rdp-button_next:focus-visible {
+  outline: 2px solid #f5f5f5;
+  outline-offset: 2px;
+}
+
+/* ---- Dropdown (month/year selectors) ---- */
+.rdp-root .rdp-dropdown_root {
+  color: #f5f5f5;
+}
+
+.rdp-root .rdp-dropdown {
+  color: #f5f5f5;
+  background-color: #111;
 }
 
 /* Scrollbar styling */

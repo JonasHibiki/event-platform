@@ -42,6 +42,8 @@ export const authOptions: AuthOptions = {
           id: user.id,
           email: user.email,
           name: user.username,
+          role: user.role,
+          canCreateEvents: user.canCreateEvents,
         }
       }
     })
@@ -56,6 +58,8 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.role = user.role
+        token.canCreateEvents = user.canCreateEvents
       }
       return token
     },
@@ -63,6 +67,8 @@ export const authOptions: AuthOptions = {
       if (token.id) {
         session.user.id = token.id as string
       }
+      session.user.role = (token.role as string) ?? 'user'
+      session.user.canCreateEvents = (token.canCreateEvents as boolean) ?? false
       return session
     }
   }

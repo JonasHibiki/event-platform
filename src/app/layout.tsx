@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "react-day-picker/style.css";
 import "./globals.css";
 import AuthProvider from '@/components/providers/SessionProvider'
 import Navbar from '@/components/navigation/Navbar'
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | vibber",
   },
   description: "Discover and create events",
-  metadataBase: new URL("https://vibberr.vercel.app"),
+  metadataBase: new URL("https://vibberr.com"),
   openGraph: {
     type: "website",
     siteName: "vibber",

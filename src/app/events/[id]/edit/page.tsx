@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
 import CompressedImageUploader from '@/components/CompressedImageUploader'
+import DatePickerInput from '@/components/DatePickerInput'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public event', description: 'Visible to everyone in event listings' },
@@ -216,7 +217,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div className="text-center">
           <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{error}</h2>
-          <Link href="/events" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <Link href="/" className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
             Back to events
           </Link>
         </div>
@@ -229,7 +230,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       <div className="max-w-2xl mx-auto px-4">
         {/* Back link */}
         <div className="mb-6">
-          <Link href={`/events/${id}`} className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <Link href={`/events/${id}`} className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}>
             Back to event
           </Link>
         </div>
@@ -239,7 +240,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
           {error && (
             <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-              <p className="text-sm" style={{ color: 'var(--destructive)' }}>{error}</p>
+              <p className="text-base" style={{ color: 'var(--destructive)' }}>{error}</p>
             </div>
           )}
 
@@ -248,19 +249,25 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             <div>
               <label className="block text-sm font-medium mb-3" style={labelStyle}>Visibility</label>
               <div className="space-y-3">
-                {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-start cursor-pointer">
-                    <input
-                      type="radio" name="visibility" value={option.value}
-                      checked={formData.visibility === option.value}
-                      onChange={handleChange} className="mt-1 mr-3 accent-white" required
-                    />
-                    <div>
-                      <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
-                      <div className="text-xs" style={hintStyle}>{option.description}</div>
-                    </div>
-                  </label>
-                ))}
+                {VISIBILITY_OPTIONS.map((option) => {
+                  const isSelected = formData.visibility === option.value
+                  return (
+                    <label key={option.value} className="flex items-start cursor-pointer group">
+                      <input
+                        type="radio" name="visibility" value={option.value}
+                        checked={isSelected}
+                        onChange={handleChange} className="sr-only" required
+                      />
+                      <span className={`mt-0.5 mr-3 flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-[#f5f5f5] bg-transparent' : 'border-[#555] bg-transparent group-hover:border-[#888]'}`}>
+                        {isSelected && <span className="w-[10px] h-[10px] rounded-full bg-[#f5f5f5]" />}
+                      </span>
+                      <div>
+                        <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
+                        <div className="text-sm" style={hintStyle}>{option.description}</div>
+                      </div>
+                    </label>
+                  )
+                })}
               </div>
             </div>
 
@@ -272,7 +279,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   name="category" id="category"
                   required={formData.visibility === 'public'}
                   value={formData.category} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 >
                   <option value="">Select a category</option>
@@ -291,7 +298,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   name="location" id="location"
                   required={formData.visibility === 'public'}
                   value={formData.location} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 >
                   <option value="">Select a city</option>
@@ -308,10 +315,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <input
                 type="text" name="title" id="title" required
                 value={formData.title} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle} placeholder="What's happening?"
               />
-              <div className="text-right text-xs mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
+              <div className="text-right text-sm mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
             </div>
 
             {/* Image */}
@@ -320,7 +327,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
               {event && !showImageUploader && (
                 <div className="space-y-3">
-                  <div className="text-xs font-medium mb-2" style={hintStyle}>Current image:</div>
+                  <div className="text-sm font-medium mb-2" style={hintStyle}>Current image:</div>
                   <div className="relative w-48 aspect-[4/5] rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
                     <Image
                       src={event.imageUrl}
@@ -336,7 +343,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   >
                     Upload new image
                   </button>
-                  <p className="text-xs" style={hintStyle}>
+                  <p className="text-sm" style={hintStyle}>
                     Don&apos;t upload to keep current image
                   </p>
                 </div>
@@ -366,30 +373,30 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <textarea
                 name="description" id="description" required rows={5}
                 value={formData.description} onChange={handleChange} onPaste={handlePaste}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-y break-words overflow-wrap-anywhere"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none resize-y break-words overflow-wrap-anywhere"
                 style={inputStyle}
                 placeholder="Tell people more about your event..."
               />
-              <div className="text-right text-xs mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
+              <div className="text-right text-sm mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
             </div>
 
             {/* Start Date/Time */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium mb-2" style={labelStyle}>Start date</label>
-                <input
-                  type="date" name="startDate" id="startDate" required
-                  value={formData.startDate} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-                  style={inputStyle}
-                />
-              </div>
+              <DatePickerInput
+                label="Start date"
+                id="startDate"
+                value={formData.startDate}
+                onChange={(date) => setFormData(p => ({ ...p, startDate: date }))}
+                required
+                inputStyle={inputStyle}
+                labelStyle={labelStyle}
+              />
               <div>
                 <label htmlFor="startTime" className="block text-sm font-medium mb-2" style={labelStyle}>Start time</label>
                 <input
                   type="time" name="startTime" id="startTime" required
                   value={formData.startTime} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 />
               </div>
@@ -397,22 +404,22 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
             {/* End Date/Time */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium mb-2" style={labelStyle}>End date</label>
-                <input
-                  type="date" name="endDate" id="endDate" required
-                  value={formData.endDate} onChange={handleChange}
-                  min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-                  style={inputStyle}
-                />
-              </div>
+              <DatePickerInput
+                label="End date"
+                id="endDate"
+                value={formData.endDate}
+                onChange={(date) => setFormData(p => ({ ...p, endDate: date }))}
+                min={formData.startDate || new Date().toISOString().split('T')[0]}
+                required
+                inputStyle={inputStyle}
+                labelStyle={labelStyle}
+              />
               <div>
                 <label htmlFor="endTime" className="block text-sm font-medium mb-2" style={labelStyle}>End time</label>
                 <input
                   type="time" name="endTime" id="endTime" required
                   value={formData.endTime} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 />
               </div>
@@ -424,11 +431,11 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <input
                 type="text" name="address" id="address" required
                 value={formData.address} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle}
                 placeholder="Rockefeller Music Hall, Torggata 16"
               />
-              <div className="flex justify-between text-xs mt-1" style={hintStyle}>
+              <div className="flex justify-between text-sm mt-1" style={hintStyle}>
                 <span>Specific address or venue name</span>
                 <span>{addressCharsLeft} characters left</span>
               </div>
@@ -443,7 +450,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 <input
                   type="url" name="locationLink" id="locationLink"
                   value={formData.locationLink} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                   placeholder="https://maps.google.com/..."
                 />
@@ -458,7 +465,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <input
                 type="url" name="ticketLink" id="ticketLink"
                 value={formData.ticketLink} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle}
                 placeholder="https://billetto.no/..."
               />
@@ -468,7 +475,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             <div className="flex gap-4">
               <Link
                 href={`/events/${id}`}
-                className="flex-1 py-3 px-4 rounded-lg font-medium text-sm text-center transition-colors"
+                className="flex-1 py-3 px-4 rounded-lg font-medium text-base text-center transition-colors"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
                 Cancel
@@ -476,7 +483,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 px-4 rounded-lg font-medium text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
               >
                 {isSubmitting ? 'Saving changes...' : 'Save changes'}

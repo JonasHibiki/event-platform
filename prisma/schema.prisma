@@ -11,12 +11,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String
-  password  String
-  createdAt DateTime @default(now())
-  
+  id              String   @id @default(cuid())
+  email           String   @unique
+  username        String
+  password        String
+  role            String   @default("user")  // "user" or "admin"
+  canCreateEvents Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
   // Relations
   events Event[]
   rsvps  RSVP[]

@@ -81,7 +81,7 @@ function DeleteConfirmModal({
           Delete event?
         </h3>
 
-        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-base mb-4" style={{ color: 'var(--text-secondary)' }}>
           Are you sure you want to delete <strong style={{ color: 'var(--text-primary)' }}>&quot;{event.title}&quot;</strong>?
           {event._count.rsvps > 0 && (
             <span className="block mt-2" style={{ color: 'var(--destructive)' }}>
@@ -90,7 +90,7 @@ function DeleteConfirmModal({
           )}
         </p>
 
-        <p className="text-xs mb-6" style={{ color: 'var(--text-tertiary)' }}>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-tertiary)' }}>
           This action cannot be undone.
         </p>
 
@@ -98,7 +98,7 @@ function DeleteConfirmModal({
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-base rounded-lg transition-colors disabled:opacity-50"
             style={{ color: 'var(--text-secondary)' }}
           >
             Cancel
@@ -106,7 +106,7 @@ function DeleteConfirmModal({
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-base rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: 'var(--destructive)', color: '#fff' }}
           >
             {isDeleting ? 'Deleting...' : 'Delete event'}
@@ -140,19 +140,19 @@ function EventCard({
           />
           <div className="absolute top-2 left-2 flex gap-1">
             {event.category && (
-              <span className="text-xs font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+              <span className="text-sm font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
                 {event.category}
               </span>
             )}
             {isPrivate && (
-              <span className="text-xs font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
+              <span className="text-sm font-medium px-2 py-1 rounded-full backdrop-blur" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}>
                 Private
               </span>
             )}
           </div>
           {!isUpcoming && (
             <div className="absolute top-2 right-2">
-              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
+              <span className="text-sm font-medium px-2 py-1 rounded-full" style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}>
                 ENDED
               </span>
             </div>
@@ -162,12 +162,12 @@ function EventCard({
 
       <div className="p-4">
         <Link href={`/events/${event.id}`}>
-          <h3 className="font-medium text-sm mb-2 line-clamp-2 hover:opacity-80 transition-opacity" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="font-medium text-base mb-2 line-clamp-2 hover:opacity-80 transition-opacity" style={{ color: 'var(--text-primary)' }}>
             {event.title}
           </h3>
         </Link>
 
-        <div className="space-y-1.5 text-xs mb-3" style={{ color: 'var(--text-tertiary)' }}>
+        <div className="space-y-1.5 text-sm mb-3" style={{ color: 'var(--text-tertiary)' }}>
           <div className="flex items-center gap-1.5">
             <CalendarIcon />
             {formatDate(event.startDate)}
@@ -190,14 +190,14 @@ function EventCard({
           <div className="flex gap-2 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <Link
               href={`/events/${event.id}/edit`}
-              className="flex-1 py-2 rounded-lg text-center text-xs font-medium transition-colors"
+              className="flex-1 py-2 rounded-lg text-center text-base font-medium transition-colors"
               style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
             >
               Edit
             </Link>
             <button
               onClick={() => onDelete?.(event)}
-              className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+              className="flex-1 py-2 rounded-lg text-base font-medium transition-colors"
               style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--destructive)' }}
             >
               Delete
@@ -209,7 +209,7 @@ function EventCard({
           <div className="pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <Link
               href={`/events/${event.id}`}
-              className="block w-full py-2 rounded-lg text-center text-xs font-medium transition-colors"
+              className="block w-full py-2 rounded-lg text-center text-base font-medium transition-colors"
               style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
             >
               View event
@@ -305,7 +305,7 @@ export default function MyEventsPage() {
           <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{error}</h2>
           <button
             onClick={() => window.location.reload()}
-            className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}
+            className="text-base font-medium" style={{ color: 'var(--text-secondary)' }}
           >
             Try again
           </button>
@@ -327,13 +327,13 @@ export default function MyEventsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>My events</h1>
-          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Overview of your events and RSVPs</p>
+          <p className="text-base" style={{ color: 'var(--text-tertiary)' }}>Overview of your events and RSVPs</p>
         </div>
 
         {/* Error */}
         {error && (
           <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-            <p className="text-sm" style={{ color: 'var(--destructive)' }}>{error}</p>
+            <p className="text-base" style={{ color: 'var(--destructive)' }}>{error}</p>
           </div>
         )}
 
@@ -347,7 +347,7 @@ export default function MyEventsPage() {
           ].map((stat) => (
             <div key={stat.label} className="rounded-xl p-4 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
               <div className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>{stat.value}</div>
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{stat.label}</div>
+              <div className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{stat.label}</div>
             </div>
           ))}
         </div>
@@ -360,7 +360,7 @@ export default function MyEventsPage() {
             </h2>
             <Link
               href="/create"
-              className="px-4 py-2 rounded-lg font-medium text-xs transition-colors"
+              className="px-4 py-2 rounded-lg font-medium text-base transition-colors"
               style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
             >
               + Create new
@@ -391,11 +391,11 @@ export default function MyEventsPage() {
 
           {data.createdEvents.length === 0 && (
             <div className="rounded-xl p-8 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
-              <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No events yet</h3>
-              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Create your first event and bring people together</p>
+              <h3 className="text-base font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No events yet</h3>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-tertiary)' }}>Create your first event and bring people together</p>
               <Link
                 href="/create"
-                className="inline-block px-6 py-2 rounded-lg font-medium text-sm"
+                className="inline-block px-6 py-2 rounded-lg font-medium text-base"
                 style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
               >
                 Create event
@@ -434,11 +434,11 @@ export default function MyEventsPage() {
 
           {data.attendingEvents.length === 0 && (
             <div className="rounded-xl p-8 text-center" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
-              <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No RSVPs yet</h3>
-              <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>Explore events and find something great</p>
+              <h3 className="text-base font-medium mb-2" style={{ color: 'var(--text-primary)' }}>No RSVPs yet</h3>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-tertiary)' }}>Explore events and find something great</p>
               <Link
-                href="/events"
-                className="inline-block px-6 py-2 rounded-lg font-medium text-sm"
+                href="/"
+                className="inline-block px-6 py-2 rounded-lg font-medium text-base"
                 style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
               >
                 Explore events

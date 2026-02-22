@@ -9,6 +9,8 @@ declare module 'next-auth' {
       name?: string | null
       email?: string | null
       image?: string | null
+      role: string
+      canCreateEvents: boolean
     }
   }
 
@@ -16,11 +18,15 @@ declare module 'next-auth' {
     id: string
     email: string
     name: string
+    role: string
+    canCreateEvents: boolean
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     id?: string
+    role?: string
+    canCreateEvents?: boolean
   }
 }

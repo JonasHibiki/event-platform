@@ -1,7 +1,7 @@
 // src/lib/constants/categories.ts
 
 export const EVENT_CATEGORIES = [
-  'Music',
+  'Concert',
   'Nightlife',
   'Conference',
   'Networking',
@@ -21,7 +21,7 @@ export const isValidCategory = (category: string): category is EventCategory => 
 
 // Category metadata with icon keys for filter UI
 export const CATEGORY_METADATA: Record<string, { icon: string; description: string }> = {
-  'Music': {
+  'Concert': {
     icon: 'music',
     description: 'Concerts, gigs, and live music'
   },

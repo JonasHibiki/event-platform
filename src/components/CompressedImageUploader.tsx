@@ -1,13 +1,41 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { compressImage, estimateCompressionTime, createPreviewUrl } from '@/lib/imageCompression';
+import React, { useState } from 'react';
+import { compressImage, estimateCompressionTime } from '@/lib/imageCompression';
 import { UploadDropzone } from '@/lib/uploadthing';
 
 interface CompressedImageUploaderProps {
   onUploadComplete: (url: string) => void;
   onUploadError: (error: string) => void;
   className?: string;
+}
+
+function UploadIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#555]">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function ImageIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#666]">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  );
 }
 
 export default function CompressedImageUploader({
@@ -26,36 +54,20 @@ export default function CompressedImageUploader({
   const [uploadComplete, setUploadComplete] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
 
+  // ── Uploaded state ──
   if (uploadComplete && uploadedImageUrl) {
     return (
-      <div className={`space-y-4 ${className}`}>
-        <div className="relative aspect-[4/5] w-full max-w-xs mx-auto">
+      <div className={`${className}`}>
+        <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-[#1a1a1a] border border-[#2a2a2a]">
           <img
             src={uploadedImageUrl}
             alt="Uploaded event image"
-            className="w-full h-full object-cover rounded-lg"
-            style={{ border: '2px solid var(--success)' }}
+            className="w-full h-full object-cover"
           />
-          <div
-            className="absolute top-2 right-2 text-xs px-2 py-1 rounded-full"
-            style={{ background: 'var(--success)', color: '#fff' }}
-          >
-            Uploaded
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#22c55e]/90 backdrop-blur-sm text-white text-[13px] font-medium">
+            <CheckIcon /> Uploaded
           </div>
         </div>
-
-        {compressionStats && (
-          <div className="rounded-lg p-4 text-sm" style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-            <h4 className="font-medium mb-2" style={{ color: 'var(--success)' }}>Upload successful</h4>
-            <div className="space-y-1" style={{ color: 'var(--text-secondary)' }}>
-              <p>Original: <span className="font-medium">{compressionStats.originalSize.toFixed(2)}MB</span></p>
-              <p>Compressed: <span className="font-medium">{compressionStats.compressedSize.toFixed(2)}MB</span></p>
-              <p className="font-medium" style={{ color: 'var(--success)' }}>
-                Saved {compressionStats.savedMB.toFixed(2)}MB ({compressionStats.savedPercentage.toFixed(1)}%)
-              </p>
-            </div>
-          </div>
-        )}
 
         <button
           type="button"
@@ -64,26 +76,28 @@ export default function CompressedImageUploader({
             setUploadedImageUrl("");
             setCompressionStats(null);
           }}
-          className="text-sm underline w-full text-center"
-          style={{ color: 'var(--text-secondary)' }}
+          className="mt-3 text-[14px] text-[#888] hover:text-[#a0a0a0] transition-colors"
         >
-          Upload new image
+          Replace image
         </button>
       </div>
     );
   }
 
+  // ── Compressing state ──
   if (isCompressing) {
     return (
-      <div className={`text-center py-8 ${className}`}>
-        <div className="animate-spin rounded-full h-10 w-10 mx-auto mb-4" style={{ borderWidth: '2px', borderStyle: 'solid', borderColor: 'var(--border)', borderTopColor: 'var(--text-primary)' }}></div>
-        <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Compressing image...</h3>
-        <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Estimated time: {estimatedTime}</p>
-        <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Reducing file size for optimal performance</p>
+      <div className={`${className}`}>
+        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-[#2a2a2a] bg-[#111]">
+          <div className="w-8 h-8 mb-4 rounded-full border-2 border-[#333] border-t-[#f5f5f5] animate-spin" />
+          <p className="text-[14px] font-medium text-[#f5f5f5] mb-1">Compressing image...</p>
+          <p className="text-[13px] text-[#666]">Estimated time: {estimatedTime}</p>
+        </div>
       </div>
     );
   }
 
+  // ── Default dropzone ──
   return (
     <div className={className}>
       <UploadDropzone
@@ -133,25 +147,20 @@ export default function CompressedImageUploader({
           onUploadError(`Upload failed: ${error.message}`);
         }}
         appearance={{
-          container: "border-2 border-dashed rounded-lg transition-colors",
-          uploadIcon: "",
-          label: "font-medium text-sm",
-          allowedContent: "text-sm"
+          container: "!bg-[#111] !border-2 !border-dashed !border-[#333] hover:!border-[#555] !rounded-xl !py-8 !transition-colors !cursor-pointer",
+          uploadIcon: "!hidden",
+          label: "!text-[#a0a0a0] !text-[14px] !font-medium",
+          allowedContent: "!text-[#555] !text-[13px]",
+          button: "!bg-[#222] !text-[#f5f5f5] !border !border-[#444] !rounded-lg !px-4 !py-2 !text-[14px] !font-medium hover:!border-[#666] !transition-colors !ut-uploading:!bg-[#333]"
         }}
         content={{
-          label: "Click or drag and drop image here",
-          allowedContent: "JPG, PNG or WebP. Max 4MB.",
+          uploadIcon: <UploadIcon />,
+          label: "Drop image here or click to browse",
+          allowedContent: "JPG, PNG or WebP · Max 4MB",
           button: "Select image"
         }}
         config={{ mode: "auto" }}
       />
-
-      <div className="mt-3 rounded-lg p-3 text-xs" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)' }}>
-        <p className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Auto compression</p>
-        <p style={{ color: 'var(--text-tertiary)' }}>
-          Your image will be compressed before uploading for fast loading and reduced environmental impact.
-        </p>
-      </div>
     </div>
   );
 }

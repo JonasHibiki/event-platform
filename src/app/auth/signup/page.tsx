@@ -57,14 +57,14 @@ export default function SignupPage() {
           <h2 className="text-center text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>
             Create account
           </h2>
-          <p className="mt-2 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="mt-2 text-center text-base" style={{ color: 'var(--text-secondary)' }}>
             Join vibber
           </p>
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           {error && (
-            <div className="px-4 py-3 rounded-md text-sm" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--destructive)' }}>
+            <div className="px-4 py-3 rounded-md text-base" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--destructive)' }}>
               {error}
             </div>
           )}
@@ -81,7 +81,7 @@ export default function SignupPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none transition-colors"
                 style={{
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border)',
@@ -102,7 +102,7 @@ export default function SignupPage() {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none transition-colors"
                 style={{
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border)',
@@ -123,7 +123,7 @@ export default function SignupPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-colors"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none transition-colors"
                 style={{
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border)',
@@ -138,7 +138,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2.5 px-4 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-2.5 px-4 text-base font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: 'var(--text-primary)',
                 color: 'var(--bg-primary)',
@@ -149,7 +149,7 @@ export default function SignupPage() {
           </div>
 
           <div className="text-center">
-            <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+            <span className="text-base" style={{ color: 'var(--text-tertiary)' }}>
               Already have an account?{' '}
               <Link href="/auth/signin" className="font-medium transition-colors" style={{ color: 'var(--text-secondary)' }}>
                 Sign in

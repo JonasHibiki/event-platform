@@ -79,11 +79,7 @@ const ExternalIcon = () => (
   </svg>
 )
 
-const ArrowLeftIcon = () => (
-  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 12H5M12 19l-7-7 7-7"/>
-  </svg>
-)
+
 
 function DeleteConfirmModal({
   event, isOpen, onClose, onConfirm, isDeleting
@@ -99,7 +95,7 @@ function DeleteConfirmModal({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-[#111] border border-[#2a2a2a] rounded-xl p-6 max-w-md w-full">
         <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-4">Delete event?</h3>
-        <p className="text-[14px] text-[#a0a0a0] mb-4">
+        <p className="text-[16px] text-[#a0a0a0] mb-4">
           Are you sure you want to delete <span className="text-[#f5f5f5] font-medium">&quot;{event.title}&quot;</span>?
           {event.rsvps.length > 0 && (
             <span className="text-[#ef4444] block mt-2">
@@ -107,10 +103,10 @@ function DeleteConfirmModal({
             </span>
           )}
         </p>
-        <p className="text-[12px] text-[#888] mb-6">This action cannot be undone.</p>
+        <p className="text-[14px] text-[#888] mb-6">This action cannot be undone.</p>
         <div className="flex gap-3 justify-end">
-          <button onClick={onClose} disabled={isDeleting} className="px-4 py-2 text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] disabled:opacity-50 transition-colors">Cancel</button>
-          <button onClick={onConfirm} disabled={isDeleting} className="px-4 py-2 text-[13px] font-medium bg-[#ef4444] text-white rounded-lg hover:bg-[#dc2626] disabled:opacity-50 transition-colors">
+          <button onClick={onClose} disabled={isDeleting} className="px-4 py-2 text-[16px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] disabled:opacity-50 transition-colors">Cancel</button>
+          <button onClick={onConfirm} disabled={isDeleting} className="px-4 py-2 text-[16px] font-medium bg-[#ef4444] text-white rounded-lg hover:bg-[#dc2626] disabled:opacity-50 transition-colors">
             {isDeleting ? 'Deleting...' : 'Delete event'}
           </button>
         </div>
@@ -147,7 +143,7 @@ function GuestListModal({
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#1e1e1e]">
           <div>
             <h3 className="text-[16px] font-semibold text-[#f5f5f5]">Guest list</h3>
-            <p className="text-[12px] text-[#888] mt-0.5">{rsvps.length} {rsvps.length === 1 ? 'person' : 'people'} going</p>
+            <p className="text-[14px] text-[#888] mt-0.5">{rsvps.length} {rsvps.length === 1 ? 'person' : 'people'} going</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1a1a1a] transition-colors">
             <svg className="w-4 h-4 text-[#888]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -158,7 +154,7 @@ function GuestListModal({
             <div>
               {rsvps.map(rsvp => (
                 <div key={rsvp.id} className="flex items-center gap-3 py-3 border-b border-[#1e1e1e] last:border-0">
-                  <div className="w-[36px] h-[36px] rounded-full bg-[#1a1a1a] flex items-center justify-center text-[13px] font-semibold text-[#a0a0a0] flex-shrink-0">
+                  <div className="w-[36px] h-[36px] rounded-full bg-[#1a1a1a] flex items-center justify-center text-[14px] font-semibold text-[#a0a0a0] flex-shrink-0">
                     {(editingUserId === rsvp.user.id ? editName : rsvp.user.username)[0]?.toUpperCase() || '?'}
                   </div>
                   {editingUserId === rsvp.user.id ? (
@@ -169,7 +165,7 @@ function GuestListModal({
                         onChange={e => setEditName(e.target.value)}
                         maxLength={50}
                         autoFocus
-                        className="flex-1 px-2 py-1 rounded text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] focus:border-[#444] transition-colors"
+                        className="flex-1 px-2 py-1 rounded text-[16px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] focus:border-[#444] transition-colors"
                         onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingUserId(null) }}
                       />
                       <button onClick={saveEdit} className="text-[#22c55e] hover:text-[#4ade80] transition-colors p-1" title="Save">
@@ -181,9 +177,9 @@ function GuestListModal({
                     </div>
                   ) : (
                     <>
-                      <span className="text-[14px] font-medium text-[#f5f5f5] flex-1">{rsvp.user.username}</span>
+                      <span className="text-[16px] font-medium text-[#f5f5f5] flex-1">{rsvp.user.username}</span>
                       {rsvp.user.id === session?.user?.id && (
-                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded">You</span>
+                        <span className="text-[14px] font-semibold uppercase tracking-wide text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded">You</span>
                       )}
                       {isCreator && (
                         <div className="flex items-center gap-1 ml-auto">
@@ -215,7 +211,7 @@ function GuestListModal({
             </div>
           ) : (
             <div className="text-center py-10">
-              <div className="text-[14px] text-[#888]">No one yet</div>
+              <div className="text-[16px] text-[#888]">No one yet</div>
             </div>
           )}
         </div>
@@ -231,25 +227,17 @@ function PublicEventView({
 }) {
   return (
     <div className="max-w-[720px] mx-auto px-5 pb-28 sm:pb-10">
-      <Link href="/events" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] py-4 transition-colors">
-        <ArrowLeftIcon /> Back
-      </Link>
-
-      <div className="relative w-[calc(100%+40px)] -ml-5 sm:w-full sm:ml-0 sm:rounded-2xl sm:mt-2 aspect-video overflow-hidden bg-[#1a1a1a]">
+      <div className="relative w-[calc(100%+40px)] -ml-5 sm:w-full sm:ml-0 sm:rounded-2xl sm:mt-4 aspect-video overflow-hidden bg-[#1a1a1a]">
         <Image src={event.imageUrl} alt={event.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 720px" />
         <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-[#0a0a0a]/60 to-transparent pointer-events-none" />
-        <div className="absolute top-4 left-4 flex gap-2">
-          {event.category && <span className="text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xl text-[#f5f5f5]">{event.category}</span>}
-          {event.location !== 'Private event' && <span className="text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xl text-[#f5f5f5]">{event.location}</span>}
-        </div>
       </div>
 
       <div className="pt-6">
         {(event.category || event.location !== 'Private event') && (
           <div className="flex items-center gap-3 mb-3 flex-wrap">
-            {event.category && <span className="text-[12px] font-semibold uppercase tracking-wider text-[#a0a0a0]">{event.category}</span>}
+            {event.category && <span className="text-[14px] font-semibold uppercase tracking-wider text-[#a0a0a0]">{event.category}</span>}
             {event.category && event.location !== 'Private event' && <span className="w-[3px] h-[3px] rounded-full bg-[#666]" />}
-            {event.location !== 'Private event' && <span className="text-[12px] font-medium text-[#888]">{event.location}</span>}
+            {event.location !== 'Private event' && <span className="text-[14px] font-medium text-[#888]">{event.location}</span>}
           </div>
         )}
 
@@ -257,9 +245,9 @@ function PublicEventView({
 
         {isCreator && (
           <div className="flex items-center gap-4 mb-6">
-            <button onClick={onShareClick} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
-            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
-            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
+            <button onClick={onShareClick} className="text-[16px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
+            <Link href={`/events/${event.id}/edit`} className="text-[16px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
+            <button onClick={onDeleteClick} className="text-[16px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
           </div>
         )}
 
@@ -267,24 +255,24 @@ function PublicEventView({
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <CalendarIcon />
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Date</div>
-              <div className="text-[14px] text-[#f5f5f5]">{formatDate(event.startDate)}</div>
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Date</div>
+              <div className="text-[16px] text-[#f5f5f5]">{formatDate(event.startDate)}</div>
             </div>
           </div>
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <ClockIcon />
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Time</div>
-              <div className="text-[14px] text-[#f5f5f5]">{formatTimeRange(event.startDate, event.endDate)}</div>
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Time</div>
+              <div className="text-[16px] text-[#f5f5f5]">{formatTimeRange(event.startDate, event.endDate)}</div>
             </div>
           </div>
           <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <PinIcon />
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Location</div>
-              <div className="text-[14px] text-[#f5f5f5]">{event.address}</div>
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Location</div>
+              <div className="text-[16px] text-[#f5f5f5]">{event.address}</div>
               {event.locationLink && (
-                <a href={event.locationLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[13px] text-[#a0a0a0] hover:text-[#f5f5f5] mt-1 transition-colors">
+                <a href={event.locationLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[16px] text-[#a0a0a0] hover:text-[#f5f5f5] mt-1 transition-colors">
                   View on map <ExternalIcon />
                 </a>
               )}
@@ -294,11 +282,11 @@ function PublicEventView({
 
         {isUpcoming && !isCreator && (
           <div className="hidden sm:flex gap-2.5 mb-10">
-            <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
+            <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[16px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
               {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
             </button>
             {event.ticketLink && (
-              <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-6 py-3 rounded-lg text-[14px] font-semibold hover:border-[#666] transition-colors">
+              <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-6 py-3 rounded-lg text-[16px] font-semibold hover:border-[#666] transition-colors">
                 <ExternalIcon /> Tickets
               </a>
             )}
@@ -307,46 +295,51 @@ function PublicEventView({
 
         {!isUpcoming && (
           <div className="flex items-center px-4 py-3 bg-[#111] border border-[#2a2a2a] rounded-xl mb-10">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#888]">Event ended</span>
+            <span className="text-[14px] font-semibold uppercase tracking-wide text-[#888]">Event ended</span>
           </div>
         )}
 
-        <div className="text-[13px] font-semibold uppercase tracking-wider text-[#888] mb-3">About</div>
-        <p className="text-[15px] leading-[1.7] text-[#a0a0a0] whitespace-pre-wrap mb-10">{event.description}</p>
+        <div className="text-[14px] font-semibold uppercase tracking-wider text-[#888] mb-3">About</div>
+        <p className="text-[16px] leading-[1.7] text-[#a0a0a0] whitespace-pre-wrap mb-10">{event.description}</p>
 
         <div className="h-px bg-[#1e1e1e] mb-8" />
 
         <button onClick={onShowGuestList} className="w-full mb-10 text-left group">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[13px] font-semibold uppercase tracking-wider text-[#888]">Who&apos;s going</div>
-            <span className="text-[13px] text-[#888] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
+            <div className="text-[14px] font-semibold uppercase tracking-wider text-[#888]">Who&apos;s going</div>
+            <span className="text-[14px] text-[#888] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
           </div>
           {event.rsvps.length > 0 ? (
             <div className="flex">
               {event.rsvps.slice(0, 8).map((rsvp, i) => (
-                <div key={rsvp.id} className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[12px] font-semibold text-[#a0a0a0]" style={{ marginLeft: i > 0 ? '-8px' : '0', zIndex: 10 - i }}>
+                <div key={rsvp.id} className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[14px] font-semibold text-[#a0a0a0]" style={{ marginLeft: i > 0 ? '-8px' : '0', zIndex: 10 - i }}>
                   {rsvp.user.username[0].toUpperCase()}
                 </div>
               ))}
               {event.rsvps.length > 8 && (
-                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[14px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
                   +{event.rsvps.length - 8}
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-[14px] text-[#888]">No one yet</div>
+            <div className="text-[16px] text-[#888]">No one yet</div>
           )}
         </button>
+
+        <Link href="/" className="mt-10 pt-6 border-t border-[#1e1e1e] flex items-center justify-center gap-2.5 text-[#777] hover:text-[#a0a0a0] transition-colors">
+          <svg className="h-[16px] w-auto" viewBox="0 0 91 56" fill="none"><path d="M45.3604 19.8447C57.7705 19.8448 68.9497 21.8687 76.9814 25.0957C81.0004 26.7105 84.1717 28.6025 86.3184 30.6416C88.4622 32.6781 89.5048 34.778 89.5049 36.8545C89.5049 38.9312 88.4623 41.0318 86.3184 43.0684C84.1717 45.1075 81.0004 46.9995 76.9814 48.6143C68.9497 51.8413 57.7705 53.8652 45.3604 53.8652C32.9501 53.8652 21.7701 51.8413 13.7383 48.6143C9.71935 46.9995 6.54803 45.1075 4.40137 43.0684C2.25742 41.0318 1.21484 38.9312 1.21484 36.8545C1.21497 34.778 2.25755 32.6781 4.40137 30.6416C6.54802 28.6025 9.71932 26.7105 13.7383 25.0957C21.7701 21.8686 32.9501 19.8447 45.3604 19.8447Z" stroke="currentColor" strokeWidth="2.43"/><path d="M45.3604 1.21484C57.7705 1.21488 68.9497 3.23877 76.9814 6.46582C81.0004 8.08061 84.1717 9.97259 86.3184 12.0117C88.4622 14.0482 89.5048 16.1481 89.5049 18.2246C89.5049 20.3013 88.4623 22.4019 86.3184 24.4385C84.1717 26.4776 81.0004 28.3696 76.9814 29.9844C68.9497 33.2114 57.7705 35.2353 45.3604 35.2354C32.9501 35.2354 21.7701 33.2115 13.7383 29.9844C9.71935 28.3696 6.54803 26.4776 4.40137 24.4385C2.25742 22.4019 1.21484 20.3013 1.21484 18.2246C1.21497 16.1481 2.25755 14.0482 4.40137 12.0117C6.54802 9.97258 9.71932 8.08062 13.7383 6.46582C21.7701 3.23874 32.9501 1.21484 45.3604 1.21484Z" stroke="currentColor" strokeWidth="2.43"/></svg>
+          <span className="text-[13px] font-medium">Powered by Vibber</span>
+        </Link>
       </div>
 
       {isUpcoming && !isCreator && (
         <div className="sm:hidden fixed bottom-0 inset-x-0 px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] bg-[#0a0a0a]/92 backdrop-blur-xl border-t border-[#1e1e1e] z-40 flex gap-2.5">
-          <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
+          <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[16px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
             {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
           </button>
           {event.ticketLink && (
-            <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-5 py-3 rounded-lg text-[14px] font-semibold">Tickets</a>
+            <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-5 py-3 rounded-lg text-[16px] font-semibold">Tickets</a>
           )}
         </div>
       )}
@@ -360,44 +353,48 @@ function PrivateEventView({
   event: Event; session: SessionData | null; isUpcoming: boolean; isCreator: boolean; userRsvp: boolean; rsvpLoading: boolean; onRsvp: () => void; onDeleteClick: () => void; onShowGuestList: () => void; onShareClick: () => void
 }) {
   return (
-    <div>
-      <div className="relative w-full h-[55vh] min-h-[320px] max-h-[500px] overflow-hidden bg-[#1a1a1a]">
-        <Image src={event.imageUrl} alt={event.title} fill className="object-cover" sizes="100vw" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/15 via-transparent via-30% to-[#0a0a0a] pointer-events-none" />
-        <div className="absolute top-[72px] left-5 opacity-50">
-          <svg className="h-[18px] w-auto text-white" viewBox="0 0 91 56" fill="none">
-            <path d="M45.3604 19.8447C57.7705 19.8448 68.9497 21.8687 76.9814 25.0957C81.0004 26.7105 84.1717 28.6025 86.3184 30.6416C88.4622 32.6781 89.5048 34.778 89.5049 36.8545C89.5049 38.9312 88.4623 41.0318 86.3184 43.0684C84.1717 45.1075 81.0004 46.9995 76.9814 48.6143C68.9497 51.8413 57.7705 53.8652 45.3604 53.8652C32.9501 53.8652 21.7701 51.8413 13.7383 48.6143C9.71935 46.9995 6.54803 45.1075 4.40137 43.0684C2.25742 41.0318 1.21484 38.9312 1.21484 36.8545C1.21497 34.778 2.25755 32.6781 4.40137 30.6416C6.54802 28.6025 9.71932 26.7105 13.7383 25.0957C21.7701 21.8686 32.9501 19.8447 45.3604 19.8447Z" stroke="currentColor" strokeWidth="2.43"/>
-            <path d="M45.3604 1.21484C57.7705 1.21488 68.9497 3.23877 76.9814 6.46582C81.0004 8.08061 84.1717 9.97259 86.3184 12.0117C88.4622 14.0482 89.5048 16.1481 89.5049 18.2246C89.5049 20.3013 88.4623 22.4019 86.3184 24.4385C84.1717 26.4776 81.0004 28.3696 76.9814 29.9844C68.9497 33.2114 57.7705 35.2353 45.3604 35.2354C32.9501 35.2354 21.7701 33.2115 13.7383 29.9844C9.71935 28.3696 6.54803 26.4776 4.40137 24.4385C2.25742 22.4019 1.21484 20.3013 1.21484 18.2246C1.21497 16.1481 2.25755 14.0482 4.40137 12.0117C6.54802 9.97258 9.71932 8.08062 13.7383 6.46582C21.7701 3.23874 32.9501 1.21484 45.3604 1.21484Z" stroke="currentColor" strokeWidth="2.43"/>
-          </svg>
-        </div>
+    <div className="max-w-[720px] mx-auto px-5 pb-28 sm:pb-10">
+      <div className="relative w-[calc(100%+40px)] -ml-5 sm:w-full sm:ml-0 sm:rounded-2xl sm:mt-4 aspect-video overflow-hidden bg-[#1a1a1a]">
+        <Image src={event.imageUrl} alt={event.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 720px" priority />
+        <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-[#0a0a0a]/60 to-transparent pointer-events-none" />
       </div>
 
-      <div className="max-w-[520px] mx-auto px-6 -mt-10 relative pb-28 sm:pb-10">
-        <h1 className="text-[32px] sm:text-[42px] font-bold leading-[1.1] tracking-tight text-[#f5f5f5] mb-8">{event.title}</h1>
+      <div className="pt-6">
+        <span className="text-[14px] font-medium text-[#888] mb-3 block">Private event</span>
+
+        <h1 className="text-[28px] sm:text-[36px] font-bold leading-[1.15] tracking-tight text-[#f5f5f5] mb-7">{event.title}</h1>
 
         {isCreator && (
           <div className="flex items-center gap-4 mb-6">
-            <button onClick={onShareClick} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
-            <Link href={`/events/${event.id}/edit`} className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
-            <button onClick={onDeleteClick} className="text-[13px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
+            <button onClick={onShareClick} className="text-[16px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Share</button>
+            <Link href={`/events/${event.id}/edit`} className="text-[16px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Edit</Link>
+            <button onClick={onDeleteClick} className="text-[16px] font-medium text-[#888] hover:text-[#ef4444] transition-colors">Delete</button>
           </div>
         )}
 
-        <div className="flex flex-col gap-5 mb-9">
-          <div className="flex items-start gap-3.5">
+        <div className="grid gap-px bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden mb-8">
+          <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
             <CalendarIcon />
             <div>
-              <div className="text-[15px] font-medium text-[#f5f5f5]">{formatDate(event.startDate)}</div>
-              <div className="text-[13px] text-[#888] mt-0.5">{formatTimeRange(event.startDate, event.endDate)}</div>
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Date</div>
+              <div className="text-[16px] text-[#f5f5f5]">{formatDate(event.startDate)}</div>
             </div>
           </div>
-          <div className="flex items-start gap-3.5">
-            <PinIcon />
+          <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
+            <ClockIcon />
             <div>
-              <div className="text-[15px] font-medium text-[#f5f5f5]">{event.address}</div>
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Time</div>
+              <div className="text-[16px] text-[#f5f5f5]">{formatTimeRange(event.startDate, event.endDate)}</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3.5 px-[18px] py-4 bg-[#111]">
+            <PinIcon />
+            <div className="flex-1 min-w-0">
+              <div className="text-[14px] font-semibold uppercase tracking-wide text-[#888] mb-0.5">Location</div>
+              <div className="text-[16px] text-[#f5f5f5]">{event.address}</div>
               {event.locationLink && (
-                <a href={event.locationLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[13px] text-[#a0a0a0] hover:text-[#f5f5f5] mt-1 transition-colors">
-                  Open in maps <ExternalIcon />
+                <a href={event.locationLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[16px] text-[#a0a0a0] hover:text-[#f5f5f5] mt-1 transition-colors">
+                  View on map <ExternalIcon />
                 </a>
               )}
             </div>
@@ -406,41 +403,55 @@ function PrivateEventView({
 
         {isUpcoming && !isCreator && (
           <div className="hidden sm:flex gap-2.5 mb-10">
-            <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
+            <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[16px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
               {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
             </button>
           </div>
         )}
 
-        <button onClick={onShowGuestList} className="mb-10 text-left group w-full">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-[13px] font-semibold text-[#888]">Going</span>
-            <span className="text-[12px] text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
+        {!isUpcoming && (
+          <div className="flex items-center px-4 py-3 bg-[#111] border border-[#2a2a2a] rounded-xl mb-10">
+            <span className="text-[14px] font-semibold uppercase tracking-wide text-[#888]">Event ended</span>
           </div>
-          {event.rsvps.length > 0 && (
+        )}
+
+        <div className="text-[14px] font-semibold uppercase tracking-wider text-[#888] mb-3">About</div>
+        <p className="text-[16px] leading-[1.7] text-[#a0a0a0] whitespace-pre-wrap mb-10">{event.description}</p>
+
+        <div className="h-px bg-[#1e1e1e] mb-8" />
+
+        <button onClick={onShowGuestList} className="w-full mb-10 text-left group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-[14px] font-semibold uppercase tracking-wider text-[#888]">Who&apos;s going</div>
+            <span className="text-[14px] text-[#888] font-medium group-hover:text-[#a0a0a0] transition-colors">{event.rsvps.length} {event.rsvps.length === 1 ? 'person' : 'people'} &rsaquo;</span>
+          </div>
+          {event.rsvps.length > 0 ? (
             <div className="flex">
-              {event.rsvps.slice(0, 5).map((rsvp, i) => (
-                <div key={rsvp.id} className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[12px] font-semibold text-[#a0a0a0]" style={{ marginLeft: i > 0 ? '-8px' : '0', zIndex: 10 - i }}>
+              {event.rsvps.slice(0, 8).map((rsvp, i) => (
+                <div key={rsvp.id} className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[14px] font-semibold text-[#a0a0a0]" style={{ marginLeft: i > 0 ? '-8px' : '0', zIndex: 10 - i }}>
                   {rsvp.user.username[0].toUpperCase()}
                 </div>
               ))}
-              {event.rsvps.length > 5 && (
-                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[10px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
-                  +{event.rsvps.length - 5}
+              {event.rsvps.length > 8 && (
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border-2 border-[#0a0a0a] flex items-center justify-center text-[14px] font-semibold text-[#888]" style={{ marginLeft: '-8px' }}>
+                  +{event.rsvps.length - 8}
                 </div>
               )}
             </div>
+          ) : (
+            <div className="text-[16px] text-[#888]">No one yet</div>
           )}
         </button>
 
-        {event.description && (
-          <p className="text-[14px] leading-[1.7] text-[#888] whitespace-pre-wrap pt-8 border-t border-[#1e1e1e]">{event.description}</p>
-        )}
+        <Link href="/" className="mt-10 pt-6 border-t border-[#1e1e1e] flex items-center justify-center gap-2.5 text-[#777] hover:text-[#a0a0a0] transition-colors">
+          <svg className="h-[16px] w-auto" viewBox="0 0 91 56" fill="none"><path d="M45.3604 19.8447C57.7705 19.8448 68.9497 21.8687 76.9814 25.0957C81.0004 26.7105 84.1717 28.6025 86.3184 30.6416C88.4622 32.6781 89.5048 34.778 89.5049 36.8545C89.5049 38.9312 88.4623 41.0318 86.3184 43.0684C84.1717 45.1075 81.0004 46.9995 76.9814 48.6143C68.9497 51.8413 57.7705 53.8652 45.3604 53.8652C32.9501 53.8652 21.7701 51.8413 13.7383 48.6143C9.71935 46.9995 6.54803 45.1075 4.40137 43.0684C2.25742 41.0318 1.21484 38.9312 1.21484 36.8545C1.21497 34.778 2.25755 32.6781 4.40137 30.6416C6.54802 28.6025 9.71932 26.7105 13.7383 25.0957C21.7701 21.8686 32.9501 19.8447 45.3604 19.8447Z" stroke="currentColor" strokeWidth="2.43"/><path d="M45.3604 1.21484C57.7705 1.21488 68.9497 3.23877 76.9814 6.46582C81.0004 8.08061 84.1717 9.97259 86.3184 12.0117C88.4622 14.0482 89.5048 16.1481 89.5049 18.2246C89.5049 20.3013 88.4623 22.4019 86.3184 24.4385C84.1717 26.4776 81.0004 28.3696 76.9814 29.9844C68.9497 33.2114 57.7705 35.2353 45.3604 35.2354C32.9501 35.2354 21.7701 33.2115 13.7383 29.9844C9.71935 28.3696 6.54803 26.4776 4.40137 24.4385C2.25742 22.4019 1.21484 20.3013 1.21484 18.2246C1.21497 16.1481 2.25755 14.0482 4.40137 12.0117C6.54802 9.97258 9.71932 8.08062 13.7383 6.46582C21.7701 3.23874 32.9501 1.21484 45.3604 1.21484Z" stroke="currentColor" strokeWidth="2.43"/></svg>
+          <span className="text-[13px] font-medium">Powered by Vibber</span>
+        </Link>
       </div>
 
       {isUpcoming && !isCreator && (
         <div className="sm:hidden fixed bottom-0 inset-x-0 px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] bg-[#0a0a0a]/92 backdrop-blur-xl border-t border-[#1e1e1e] z-40 flex gap-2.5">
-          <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
+          <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[16px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
             {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
           </button>
         </div>
@@ -467,12 +478,12 @@ function GuestRsvpModal({
         {initialName ? (
           <>
             <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-1">Hey {initialName}!</h3>
-            <p className="text-[13px] text-[#888] mb-5">You&apos;ve been invited. Confirm below to RSVP.</p>
+            <p className="text-[14px] text-[#888] mb-5">You&apos;ve been invited. Confirm below to RSVP.</p>
           </>
         ) : (
           <>
             <h3 className="text-[16px] font-semibold text-[#f5f5f5] mb-1">What&apos;s your name?</h3>
-            <p className="text-[13px] text-[#888] mb-5">So people know who&apos;s coming.</p>
+            <p className="text-[14px] text-[#888] mb-5">So people know who&apos;s coming.</p>
           </>
         )}
         <input
@@ -482,12 +493,12 @@ function GuestRsvpModal({
           placeholder="Your name"
           maxLength={50}
           autoFocus={!initialName}
-          className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-4"
+          className="w-full px-3 py-2.5 rounded-lg text-[16px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-4"
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) onSubmit(name.trim()) }}
         />
         <div className="flex gap-3">
-          <button onClick={onClose} disabled={isLoading} className="flex-1 py-2.5 text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Cancel</button>
-          <button onClick={() => name.trim() && onSubmit(name.trim())} disabled={isLoading || !name.trim()} className="flex-1 py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all">
+          <button onClick={onClose} disabled={isLoading} className="flex-1 py-2.5 text-[16px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Cancel</button>
+          <button onClick={() => name.trim() && onSubmit(name.trim())} disabled={isLoading || !name.trim()} className="flex-1 py-2.5 rounded-lg text-[16px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all">
             {isLoading ? 'Joining...' : "I'm going"}
           </button>
         </div>
@@ -573,10 +584,10 @@ function InviteModal({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium text-[#f5f5f5]">Copy link</div>
-                  <div className="text-[12px] text-[#888]">Share one link with everyone</div>
+                  <div className="text-[16px] font-medium text-[#f5f5f5]">Copy link</div>
+                  <div className="text-[14px] text-[#888]">Share one link with everyone</div>
                 </div>
-                {copied === 'open' && <span className="text-[12px] font-medium text-[#22c55e]">Copied</span>}
+                {copied === 'open' && <span className="text-[14px] font-medium text-[#22c55e]">Copied</span>}
               </button>
 
               <button
@@ -590,8 +601,8 @@ function InviteModal({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium text-[#f5f5f5]">Personal invite</div>
-                  <div className="text-[12px] text-[#888]">Name pre-filled when they open</div>
+                  <div className="text-[16px] font-medium text-[#f5f5f5]">Personal invite</div>
+                  <div className="text-[14px] text-[#888]">Name pre-filled when they open</div>
                 </div>
               </button>
 
@@ -607,8 +618,8 @@ function InviteModal({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium text-[#f5f5f5]">Paste guestlist</div>
-                  <div className="text-[12px] text-[#888]">Generate links for multiple guests</div>
+                  <div className="text-[16px] font-medium text-[#f5f5f5]">Paste guestlist</div>
+                  <div className="text-[14px] text-[#888]">Generate links for multiple guests</div>
                 </div>
               </button>
             </div>
@@ -623,19 +634,19 @@ function InviteModal({
                 placeholder="Guest name"
                 maxLength={50}
                 autoFocus
-                className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3"
+                className="w-full px-3 py-2.5 rounded-lg text-[16px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3"
                 onKeyDown={e => { if (e.key === 'Enter' && singleName.trim()) copyToClipboard(getInviteUrl(singleName), 'single') }}
               />
               {singleName.trim() && (
                 <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 mb-3">
-                  <div className="text-[12px] text-[#888] mb-1.5">Invite link for {singleName.trim()}</div>
-                  <div className="text-[12px] text-[#a0a0a0] break-all font-mono">{getInviteUrl(singleName)}</div>
+                  <div className="text-[14px] text-[#888] mb-1.5">Invite link for {singleName.trim()}</div>
+                  <div className="text-[14px] text-[#a0a0a0] break-all font-mono">{getInviteUrl(singleName)}</div>
                 </div>
               )}
               <button
                 onClick={() => copyToClipboard(getInviteUrl(singleName), 'single')}
                 disabled={!singleName.trim()}
-                className="w-full py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
+                className="w-full py-2.5 rounded-lg text-[16px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
               >
                 {copied === 'single' ? 'Copied!' : 'Copy invite link'}
               </button>
@@ -646,19 +657,19 @@ function InviteModal({
             <div>
               {bulkLinks.length === 0 ? (
                 <>
-                  <p className="text-[13px] text-[#888] mb-3">Paste names, one per line</p>
+                  <p className="text-[14px] text-[#888] mb-3">Paste names, one per line</p>
                   <textarea
                     value={bulkNames}
                     onChange={e => setBulkNames(e.target.value)}
                     placeholder={"Jonas Gripsrud\nOla Nordmann\nKari Nordmann"}
                     rows={6}
                     autoFocus
-                    className="w-full px-3 py-2.5 rounded-lg text-[14px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3 resize-none"
+                    className="w-full px-3 py-2.5 rounded-lg text-[16px] outline-none bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] placeholder-[#666] focus:border-[#444] transition-colors mb-3 resize-none"
                   />
                   <button
                     onClick={generateBulkLinks}
                     disabled={!bulkNames.trim()}
-                    className="w-full py-2.5 rounded-lg text-[14px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
+                    className="w-full py-2.5 rounded-lg text-[16px] font-semibold bg-[#f5f5f5] text-[#0a0a0a] disabled:opacity-40 transition-all"
                   >
                     Generate links
                   </button>
@@ -666,8 +677,8 @@ function InviteModal({
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[13px] text-[#888]">{bulkLinks.length} {bulkLinks.length === 1 ? 'link' : 'links'} generated</span>
-                    <button onClick={copyAllLinks} className="text-[13px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">
+                    <span className="text-[14px] text-[#888]">{bulkLinks.length} {bulkLinks.length === 1 ? 'link' : 'links'} generated</span>
+                    <button onClick={copyAllLinks} className="text-[16px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">
                       {copied === 'all' ? 'Copied all!' : 'Copy all'}
                     </button>
                   </div>
@@ -675,8 +686,8 @@ function InviteModal({
                     {bulkLinks.map((link, i) => (
                       <div key={i} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[13px] font-medium text-[#f5f5f5] mb-0.5">{link.name}</div>
-                          <div className="text-[11px] text-[#888] break-all font-mono">{link.url}</div>
+                          <div className="text-[14px] font-medium text-[#f5f5f5] mb-0.5">{link.name}</div>
+                          <div className="text-[14px] text-[#888] break-all font-mono">{link.url}</div>
                         </div>
                         <button
                           onClick={() => copyToClipboard(link.url, `bulk-${i}`)}
@@ -706,7 +717,7 @@ function InviteModal({
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[14px]">Loading event...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[16px]">Loading event...</div></div>}>
       <EventDetailContent params={params} />
     </Suspense>
   )
@@ -859,14 +870,14 @@ export function EventDetailContent({ params }: { params: Promise<{ id: string }>
     } catch { setError('Something went wrong'); setDeleteModal({ isOpen: false, isDeleting: false }) }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[14px]">Loading event...</div></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="text-[#888] text-[16px]">Loading event...</div></div>
 
   if (error || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-[18px] font-semibold text-[#f5f5f5] mb-2">{error || 'Not found'}</h2>
-          <Link href="/events" className="text-[13px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Back to events</Link>
+          <Link href="/" className="text-[16px] font-medium text-[#888] hover:text-[#a0a0a0] transition-colors">Back to events</Link>
         </div>
       </div>
     )

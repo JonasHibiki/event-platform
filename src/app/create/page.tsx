@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 import { NORWEGIAN_CITIES } from '@/lib/constants/locations'
 import CompressedImageUploader from '@/components/CompressedImageUploader'
+import DatePickerInput from '@/components/DatePickerInput'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public event', description: 'Visible to everyone in event listings' },
@@ -47,6 +48,18 @@ export default function CreateEventPage() {
   if (status === 'unauthenticated') {
     router.push('/auth/signin')
     return null
+  }
+
+  if (session && !session.user.canCreateEvents) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div className="text-center max-w-md px-5">
+          <h1 className="text-[20px] font-semibold text-[#f5f5f5] mb-3">No access yet</h1>
+          <p className="text-[16px] text-[#888] mb-6">Your account doesn&apos;t have permission to create events. Contact an admin to get access.</p>
+          <button onClick={() => router.push('/')} className="text-[16px] font-medium text-[#a0a0a0] hover:text-[#f5f5f5] transition-colors">Back to events</button>
+        </div>
+      </div>
+    )
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -141,7 +154,7 @@ export default function CreateEventPage() {
 
           {error && (
             <div className="rounded-lg p-4 mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-              <p style={{ color: 'var(--destructive)' }} className="text-sm">{error}</p>
+              <p style={{ color: 'var(--destructive)' }} className="text-base">{error}</p>
             </div>
           )}
 
@@ -150,23 +163,29 @@ export default function CreateEventPage() {
             <div>
               <label className="block text-sm font-medium mb-3" style={labelStyle}>Visibility</label>
               <div className="space-y-3">
-                {VISIBILITY_OPTIONS.map((option) => (
-                  <label key={option.value} className="flex items-start cursor-pointer">
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value={option.value}
-                      checked={formData.visibility === option.value}
-                      onChange={handleChange}
-                      className="mt-1 mr-3 accent-white"
-                      required
-                    />
-                    <div>
-                      <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
-                      <div className="text-xs" style={hintStyle}>{option.description}</div>
-                    </div>
-                  </label>
-                ))}
+                {VISIBILITY_OPTIONS.map((option) => {
+                  const isSelected = formData.visibility === option.value
+                  return (
+                    <label key={option.value} className="flex items-start cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="visibility"
+                        value={option.value}
+                        checked={isSelected}
+                        onChange={handleChange}
+                        className="sr-only"
+                        required
+                      />
+                      <span className={`mt-0.5 mr-3 flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-[#f5f5f5] bg-transparent' : 'border-[#555] bg-transparent group-hover:border-[#888]'}`}>
+                        {isSelected && <span className="w-[10px] h-[10px] rounded-full bg-[#f5f5f5]" />}
+                      </span>
+                      <div>
+                        <div className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{option.label}</div>
+                        <div className="text-sm" style={hintStyle}>{option.description}</div>
+                      </div>
+                    </label>
+                  )
+                })}
               </div>
             </div>
 
@@ -179,7 +198,7 @@ export default function CreateEventPage() {
                   required={formData.visibility === 'public'}
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 >
                   <option value="">Select a category</option>
@@ -187,7 +206,7 @@ export default function CreateEventPage() {
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
-                <div className="text-xs mt-1" style={hintStyle}>Helps people find your event</div>
+                <div className="text-sm mt-1" style={hintStyle}>Helps people find your event</div>
               </div>
             )}
 
@@ -200,7 +219,7 @@ export default function CreateEventPage() {
                   required={formData.visibility === 'public'}
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 >
                   <option value="">Select a city</option>
@@ -208,7 +227,7 @@ export default function CreateEventPage() {
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
-                <div className="text-xs mt-1" style={hintStyle}>Helps people find events in their city</div>
+                <div className="text-sm mt-1" style={hintStyle}>Helps people find events in their city</div>
               </div>
             )}
 
@@ -218,11 +237,11 @@ export default function CreateEventPage() {
               <input
                 type="text" name="title" id="title" required
                 value={formData.title} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle}
                 placeholder="What's happening?"
               />
-              <div className="text-right text-xs mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
+              <div className="text-right text-sm mt-1" style={hintStyle}>{titleCharsLeft} characters left</div>
             </div>
 
             {/* Image */}
@@ -241,31 +260,31 @@ export default function CreateEventPage() {
               <textarea
                 name="description" id="description" required rows={5}
                 value={formData.description} onChange={handleChange} onPaste={handlePaste}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-y break-words overflow-wrap-anywhere"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none resize-y break-words overflow-wrap-anywhere"
                 style={inputStyle}
                 placeholder="Tell people more about your event..."
               />
-              <div className="text-right text-xs mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
+              <div className="text-right text-sm mt-1" style={hintStyle}>{descriptionCharsLeft} characters left</div>
             </div>
 
             {/* Start Date/Time */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium mb-2" style={labelStyle}>Start date</label>
-                <input
-                  type="date" name="startDate" id="startDate" required
-                  value={formData.startDate} onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-                  style={inputStyle}
-                />
-              </div>
+              <DatePickerInput
+                label="Start date"
+                id="startDate"
+                value={formData.startDate}
+                onChange={(date) => setFormData(p => ({ ...p, startDate: date }))}
+                min={new Date().toISOString().split('T')[0]}
+                required
+                inputStyle={inputStyle}
+                labelStyle={labelStyle}
+              />
               <div>
                 <label htmlFor="startTime" className="block text-sm font-medium mb-2" style={labelStyle}>Start time</label>
                 <input
                   type="time" name="startTime" id="startTime" required
                   value={formData.startTime} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 />
               </div>
@@ -273,22 +292,22 @@ export default function CreateEventPage() {
 
             {/* End Date/Time */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium mb-2" style={labelStyle}>End date</label>
-                <input
-                  type="date" name="endDate" id="endDate" required
-                  value={formData.endDate} onChange={handleChange}
-                  min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-                  style={inputStyle}
-                />
-              </div>
+              <DatePickerInput
+                label="End date"
+                id="endDate"
+                value={formData.endDate}
+                onChange={(date) => setFormData(p => ({ ...p, endDate: date }))}
+                min={formData.startDate || new Date().toISOString().split('T')[0]}
+                required
+                inputStyle={inputStyle}
+                labelStyle={labelStyle}
+              />
               <div>
                 <label htmlFor="endTime" className="block text-sm font-medium mb-2" style={labelStyle}>End time</label>
                 <input
                   type="time" name="endTime" id="endTime" required
                   value={formData.endTime} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                 />
               </div>
@@ -300,11 +319,11 @@ export default function CreateEventPage() {
               <input
                 type="text" name="address" id="address" required
                 value={formData.address} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle}
                 placeholder="Rockefeller Music Hall, Torggata 16"
               />
-              <div className="flex justify-between text-xs mt-1" style={hintStyle}>
+              <div className="flex justify-between text-sm mt-1" style={hintStyle}>
                 <span>Specific address or venue name</span>
                 <span>{addressCharsLeft} characters left</span>
               </div>
@@ -319,11 +338,11 @@ export default function CreateEventPage() {
                 <input
                   type="url" name="locationLink" id="locationLink"
                   value={formData.locationLink} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                   style={inputStyle}
                   placeholder="https://maps.google.com/..."
                 />
-                <div className="text-xs mt-1" style={hintStyle}>Google Maps link or venue website</div>
+                <div className="text-sm mt-1" style={hintStyle}>Google Maps link or venue website</div>
               </div>
             )}
 
@@ -335,18 +354,18 @@ export default function CreateEventPage() {
               <input
                 type="url" name="ticketLink" id="ticketLink"
                 value={formData.ticketLink} onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
                 style={inputStyle}
                 placeholder="https://billetto.no/..."
               />
-              <div className="text-xs mt-1" style={hintStyle}>Link to buy tickets</div>
+              <div className="text-sm mt-1" style={hintStyle}>Link to buy tickets</div>
             </div>
 
             {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting || !imageUrl}
-              className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 rounded-lg font-medium text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: 'var(--text-primary)',
                 color: 'var(--bg-primary)',

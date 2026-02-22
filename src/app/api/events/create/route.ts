@@ -29,6 +29,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Check permission to create events (from DB, not session, for security)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { canCreateEvents: true }
+    })
+
+    if (!user?.canCreateEvents) {
+      return NextResponse.json(
+        { message: 'You do not have permission to create events' },
+        { status: 403 }
+      )
+    }
+
     // Parse request body
     const body = await req.json()
     const { 
