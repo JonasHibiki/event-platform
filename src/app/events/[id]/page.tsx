@@ -189,7 +189,7 @@ function PublicEventView({
         {isUpcoming && !isCreator && (
           <div className="hidden sm:flex gap-2.5 mb-10">
             <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
-              {rsvpLoading ? 'Updating...' : userRsvp ? 'Going' : "I'm going"}
+              {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
             </button>
             {event.ticketLink && (
               <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-6 py-3 rounded-lg text-[14px] font-semibold hover:border-[#666] transition-colors">
@@ -240,7 +240,7 @@ function PublicEventView({
       {isUpcoming && !isCreator && (
         <div className="sm:hidden fixed bottom-0 inset-x-0 px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] bg-[#0a0a0a]/92 backdrop-blur-xl border-t border-[#1e1e1e] z-40 flex gap-2.5">
           <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
-            {rsvpLoading ? 'Updating...' : userRsvp ? 'Going' : "I'm going"}
+            {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
           </button>
           {event.ticketLink && (
             <a href={event.ticketLink} target="_blank" rel="noopener noreferrer" className="bg-[#111] text-[#f5f5f5] border border-[#2a2a2a] px-5 py-3 rounded-lg text-[14px] font-semibold">Tickets</a>
@@ -304,7 +304,7 @@ function PrivateEventView({
         {isUpcoming && !isCreator && (
           <div className="hidden sm:flex gap-2.5 mb-10">
             <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 px-6 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a] hover:opacity-85'}`}>
-              {rsvpLoading ? 'Updating...' : userRsvp ? 'Going' : "I'm going"}
+              {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
             </button>
           </div>
         )}
@@ -338,7 +338,7 @@ function PrivateEventView({
       {isUpcoming && !isCreator && (
         <div className="sm:hidden fixed bottom-0 inset-x-0 px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] bg-[#0a0a0a]/92 backdrop-blur-xl border-t border-[#1e1e1e] z-40 flex gap-2.5">
           <button onClick={onRsvp} disabled={rsvpLoading} className={`flex-1 py-3 rounded-lg text-[14px] font-semibold transition-all disabled:opacity-50 ${userRsvp ? 'bg-[#222] text-[#f5f5f5] border border-[#2a2a2a]' : 'bg-[#f5f5f5] text-[#0a0a0a]'}`}>
-            {rsvpLoading ? 'Updating...' : userRsvp ? 'Going' : "I'm going"}
+            {rsvpLoading ? 'Updating...' : userRsvp ? 'Going \u2715' : "I'm going"}
           </button>
         </div>
       )}
@@ -389,8 +389,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, isDeleting: false })
   const [guestModal, setGuestModal] = useState(false)
+  const [guestRsvpDone, setGuestRsvpDone] = useState(false)
+
+  // Check localStorage for guest RSVP on mount
+  useEffect(() => {
+    try {
+      const guestRsvps = JSON.parse(localStorage.getItem('vibber_guest_rsvps') || '{}')
+      if (guestRsvps[id]) setGuestRsvpDone(true)
+    } catch { /* ignore */ }
+  }, [id])
 
   const userRsvp = event?.rsvps.find(rsvp => rsvp.user.id === session?.user?.id)
+  const hasRsvpd = !!userRsvp || (!session && guestRsvpDone)
   const isCreator = event?.creator.id === session?.user?.id
 
   const fetchEvent = useCallback(async () => {
@@ -415,9 +425,31 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   }, [event])
 
   const handleRsvp = async (guestName?: string) => {
-    // If not logged in, show guest name modal
-    if (!session && !guestName) {
+    // If not logged in and hasn't RSVP'd yet, show guest name modal
+    if (!session && !guestRsvpDone && !guestName) {
       setGuestModal(true)
+      return
+    }
+
+    // If guest wants to un-go, remove from localStorage and refresh
+    if (!session && guestRsvpDone) {
+      try {
+        const guestRsvps = JSON.parse(localStorage.getItem('vibber_guest_rsvps') || '{}')
+        const rsvpId = guestRsvps[id]
+        if (rsvpId) {
+          setRsvpLoading(true)
+          const response = await fetch(`/api/events/${id}/rsvp/${rsvpId}`, { method: 'DELETE' })
+          if (response.ok) {
+            delete guestRsvps[id]
+            localStorage.setItem('vibber_guest_rsvps', JSON.stringify(guestRsvps))
+            setGuestRsvpDone(false)
+            await fetchEvent()
+          } else {
+            setError('Could not remove RSVP')
+          }
+          setRsvpLoading(false)
+        }
+      } catch { setError('Something went wrong'); setRsvpLoading(false) }
       return
     }
 
@@ -433,6 +465,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       const response = await fetch(`/api/events/${id}/rsvp`, options)
       if (response.ok) {
         setGuestModal(false)
+        // If guest RSVP, store the RSVP ID in localStorage
+        if (!session && guestName) {
+          try {
+            const data = await response.json()
+            const guestRsvps = JSON.parse(localStorage.getItem('vibber_guest_rsvps') || '{}')
+            guestRsvps[id] = data.id
+            localStorage.setItem('vibber_guest_rsvps', JSON.stringify(guestRsvps))
+            setGuestRsvpDone(true)
+          } catch { /* ignore */ }
+        }
         await fetchEvent()
       }
       else setError('Could not update RSVP')
@@ -465,7 +507,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const isUpcoming = new Date(event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
-  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: !!userRsvp, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }) }
+  const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }) }
 
   return (
     <>
