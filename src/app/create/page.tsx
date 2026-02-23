@@ -20,6 +20,8 @@ export default function CreateEventPage() {
   const [error, setError] = useState('')
   const [imageUrl, setImageUrl] = useState<string>('')
 
+  const [showEndTime, setShowEndTime] = useState(false)
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -98,16 +100,20 @@ export default function CreateEventPage() {
       if (formData.ticketLink && !validateUrl(formData.ticketLink)) { setError('Please enter a valid URL for ticket link'); setIsSubmitting(false); return }
 
       const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
-      const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
-
-      if (startDateTime >= endDateTime) { setError('End time must be after start time'); setIsSubmitting(false); return }
       if (startDateTime <= new Date()) { setError('Event must start in the future'); setIsSubmitting(false); return }
+
+      let endDateISO: string | null = null
+      if (showEndTime && formData.endDate && formData.endTime) {
+        const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
+        if (startDateTime >= endDateTime) { setError('End time must be after start time'); setIsSubmitting(false); return }
+        endDateISO = endDateTime.toISOString()
+      }
 
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
+        endDate: endDateISO,
         location: formData.visibility === 'public' ? formData.location.trim() : 'Private event',
         address: formData.address.trim(),
         locationLink: formData.locationLink.trim() || null,
@@ -290,28 +296,49 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            {/* End Date/Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <DatePickerInput
-                label="End date"
-                id="endDate"
-                value={formData.endDate}
-                onChange={(date) => setFormData(p => ({ ...p, endDate: date }))}
-                min={formData.startDate || new Date().toISOString().split('T')[0]}
-                required
-                inputStyle={inputStyle}
-                labelStyle={labelStyle}
-              />
+            {/* End Date/Time Toggle */}
+            {!showEndTime ? (
+              <button
+                type="button"
+                onClick={() => setShowEndTime(true)}
+                className="text-sm font-medium transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                + Add end time
+              </button>
+            ) : (
               <div>
-                <label htmlFor="endTime" className="block text-sm font-medium mb-2" style={labelStyle}>End time</label>
-                <input
-                  type="time" name="endTime" id="endTime" required
-                  value={formData.endTime} onChange={handleChange}
-                  className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
-                  style={inputStyle}
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium" style={labelStyle}>End date & time</label>
+                  <button
+                    type="button"
+                    onClick={() => { setShowEndTime(false); setFormData(p => ({ ...p, endDate: '', endTime: '' })) }}
+                    className="text-sm font-medium transition-colors"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <DatePickerInput
+                    label=""
+                    id="endDate"
+                    value={formData.endDate}
+                    onChange={(date) => setFormData(p => ({ ...p, endDate: date }))}
+                    min={formData.startDate || new Date().toISOString().split('T')[0]}
+                    required
+                    inputStyle={inputStyle}
+                    labelStyle={labelStyle}
+                  />
+                  <input
+                    type="time" name="endTime" id="endTime" required
+                    value={formData.endTime} onChange={handleChange}
+                    className="w-full px-3 py-2.5 rounded-lg text-base outline-none"
+                    style={inputStyle}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Address */}
             <div>

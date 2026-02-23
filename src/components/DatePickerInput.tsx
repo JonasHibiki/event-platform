@@ -39,7 +39,7 @@ export default function DatePickerInput({ value, onChange, min, label, id, requi
 
   return (
     <div ref={containerRef} className="relative">
-      <label htmlFor={id} className="block text-sm font-medium mb-2" style={labelStyle}>{label}</label>
+      {label && <label htmlFor={id} className="block text-sm font-medium mb-2" style={labelStyle}>{label}</label>}
       <button
         type="button"
         id={id}

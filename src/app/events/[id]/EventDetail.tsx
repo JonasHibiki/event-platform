@@ -16,7 +16,7 @@ interface Event {
   description: string
   imageUrl: string
   startDate: string
-  endDate: string
+  endDate: string | null
   location: string
   address: string
   locationLink?: string | null
@@ -45,8 +45,9 @@ function formatDate(dateString: string): string {
   }).format(new Date(dateString))
 }
 
-function formatTimeRange(start: string, end: string): string {
+function formatTimeRange(start: string, end: string | null): string {
   const fmt = (d: string) => new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(d))
+  if (!end) return fmt(start)
   return `${fmt(start)} - ${fmt(end)}`
 }
 
@@ -883,7 +884,7 @@ export function EventDetailContent({ params }: { params: Promise<{ id: string }>
     )
   }
 
-  const isUpcoming = new Date(event.startDate) > new Date()
+  const isUpcoming = new Date(event.endDate || event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
   const viewProps = { event, session, isUpcoming, isCreator: !!isCreator, userRsvp: hasRsvpd, rsvpLoading, onRsvp: () => handleRsvp(), onDeleteClick: () => setDeleteModal({ isOpen: true, isDeleting: false }), onShowGuestList: () => setGuestListModal(true), onShareClick: () => setInviteModal(true) }
 

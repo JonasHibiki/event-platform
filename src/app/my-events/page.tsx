@@ -12,7 +12,7 @@ interface Event {
   description: string
   imageUrl: string
   startDate: string
-  endDate: string
+  endDate: string | null
   location: string
   address: string
   category: string | null
@@ -124,7 +124,7 @@ function EventCard({
   showManagement?: boolean
   onDelete?: (event: Event) => void
 }) {
-  const isUpcoming = new Date(event.startDate) > new Date()
+  const isUpcoming = new Date(event.endDate || event.startDate) > new Date()
   const isPrivate = event.visibility === 'private'
 
   return (
@@ -174,7 +174,7 @@ function EventCard({
           </div>
           <div className="flex items-center gap-1.5">
             <ClockIcon />
-            {formatTime(event.startDate)} - {formatTime(event.endDate)}
+            {event.endDate ? `${formatTime(event.startDate)} - ${formatTime(event.endDate)}` : formatTime(event.startDate)}
           </div>
           <div className="flex items-center gap-1.5">
             <PinIcon />
@@ -316,10 +316,10 @@ export default function MyEventsPage() {
 
   if (!data) return null
 
-  const upcomingCreated = data.createdEvents.filter(event => new Date(event.startDate) > new Date())
-  const pastCreated = data.createdEvents.filter(event => new Date(event.startDate) <= new Date())
-  const upcomingAttending = data.attendingEvents.filter(event => new Date(event.startDate) > new Date())
-  const pastAttending = data.attendingEvents.filter(event => new Date(event.startDate) <= new Date())
+  const upcomingCreated = data.createdEvents.filter(event => new Date(event.endDate || event.startDate) > new Date())
+  const pastCreated = data.createdEvents.filter(event => new Date(event.endDate || event.startDate) <= new Date())
+  const upcomingAttending = data.attendingEvents.filter(event => new Date(event.endDate || event.startDate) > new Date())
+  const pastAttending = data.attendingEvents.filter(event => new Date(event.endDate || event.startDate) <= new Date())
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>

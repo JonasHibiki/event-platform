@@ -58,8 +58,8 @@ export async function POST(req: NextRequest) {
       visibility 
     } = body
 
-    // Validate required fields
-    if (!title || !description || !imageUrl || !startDate || !endDate || !address || !visibility) {
+    // Validate required fields (endDate is now optional)
+    if (!title || !description || !imageUrl || !startDate || !address || !visibility) {
       return NextResponse.json(
         { message: 'Alle påkrevde felt må fylles ut' },
         { status: 400 }
@@ -147,20 +147,29 @@ export async function POST(req: NextRequest) {
 
     // Validate dates
     const start = new Date(startDate)
-    const end = new Date(endDate)
-    
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+
+    if (isNaN(start.getTime())) {
       return NextResponse.json(
         { message: 'Ugyldig datoformat' },
         { status: 400 }
       )
     }
 
-    if (start >= end) {
-      return NextResponse.json(
-        { message: 'Sluttidspunkt må være etter starttidspunkt' },
-        { status: 400 }
-      )
+    let end: Date | null = null
+    if (endDate) {
+      end = new Date(endDate)
+      if (isNaN(end.getTime())) {
+        return NextResponse.json(
+          { message: 'Ugyldig sluttdato' },
+          { status: 400 }
+        )
+      }
+      if (start >= end) {
+        return NextResponse.json(
+          { message: 'Sluttidspunkt må være etter starttidspunkt' },
+          { status: 400 }
+        )
+      }
     }
 
     if (start <= new Date()) {

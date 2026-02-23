@@ -32,7 +32,7 @@ model Event {
   description String   // Max 800 characters (enforced in app)
   imageUrl    String   // Required - URL to uploaded image
   startDate   DateTime
-  endDate     DateTime
+  endDate     DateTime? // Optional - if null, event ends when startDate passes
   location    String   // City for public events, "Privat arrangement" for private
   address     String   // Required - specific address/venue (max 200 chars in app)
   locationLink String? // Optional URL for location

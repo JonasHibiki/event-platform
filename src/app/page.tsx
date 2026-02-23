@@ -12,7 +12,7 @@ interface Event {
   title: string
   description: string
   startDate: string
-  endDate: string
+  endDate: string | null
   location: string
   address: string
   category: string | null
@@ -271,7 +271,7 @@ function getWeekendDates() {
 
 // ======================== EVENT CARD ========================
 function EventCard({ event }: { event: Event }) {
-  const isUpcoming = new Date(event.startDate) > new Date()
+  const isUpcoming = new Date(event.endDate || event.startDate) > new Date()
   return (
     <Link href={`/events/${event.id}`}>
       <div className="bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden hover:border-[#444] transition-colors group">
@@ -352,8 +352,8 @@ export default function HomePage() {
     return true
   })
 
-  const upcoming = filteredEvents.filter(e => new Date(e.startDate) > new Date())
-  const past = filteredEvents.filter(e => new Date(e.startDate) <= new Date())
+  const upcoming = filteredEvents.filter(e => new Date(e.endDate || e.startDate) > new Date())
+  const past = filteredEvents.filter(e => new Date(e.endDate || e.startDate) <= new Date())
   const hasFilters = filters.category || filters.city || filters.startDate || filters.endDate
 
   // Dynamic heading based on active filters
